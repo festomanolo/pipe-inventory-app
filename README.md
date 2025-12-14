@@ -137,11 +137,3 @@ This project currently declares the ISC license in `package.json`. If you want a
 This repository contains many helper and build scripts for packaging on different host OSes. If you need help setting up signing (macOS hardened runtime / Notary, Windows code signing) or configuring automatic releases, provide the signing certificates and I can help wire them into the build.
 
 ---
-
-Notes: I added a professional README.md. To push this project to GitHub I need one of the following from you:
-
-1. The GitHub remote repository URL (HTTPS or SSH) to add as `origin`, or
-2. Confirm you already have a remote named `origin` set up and want me to push to it, or
-3. Permission to create a new repo under your GitHub account (in which case I will need a repo URL or an access token and repo name). 
-
-Tell me which option you prefer and I'll finish the push step. If you'd like, I can also create a recommended GitHub Actions workflow for CI and release automation after push.
