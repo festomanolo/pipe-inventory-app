@@ -1,0 +1,9 @@
+/* 
+ * hide-reports.css
+ * This CSS file hides the Reports link in the sidebar navigation
+ */
+
+/* Hide the Reports link in the sidebar */
+.sidebar-nav li a[href="reports.html"] {
+  display: none;
+} 

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Button</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1a1a2e;
+      color: #e6e6e6;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #16213e;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #e6e6e6;
+    }
+    select, button {
+      background-color: #1a1a2e;
+      color: #e6e6e6;
+      border: 1px solid #4361ee;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    button {
+      background-color: #4361ee;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3a56d4;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Test Button</h1>
+    <form id="test-form">
+      <div class="form-group">
+        <label for="test-select">Select an option</label>
+        <select id="test-select" required>
+          <option value="">Select an option</option>
+          <option value="option1">Option 1</option>
+          <option value="option2">Option 2</option>
+          <option value="option3">Option 3</option>
+        </select>
+      </div>
+      <button type="submit" id="test-button">Submit</button>
+    </form>
+    <div id="result" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const testForm = document.getElementById('test-form');
+    const testSelect = document.getElementById('test-select');
+    const testButton = document.getElementById('test-button');
+    const result = document.getElementById('result');
+    
+    // Event Listeners
+    testForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const value = testSelect.value;
+      
+      if (!value) {
+        alert('Please select an option');
+        return;
+      }
+      
+      testButton.disabled = true;
+      result.textContent = 'Processing...';
+      
+      // Simulate API call
+      setTimeout(() => {
+        result.textContent = `Selected option: ${value}`;
+        testButton.disabled = false;
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+
+// Global error handler to prevent UI freezes
+window.addEventListener('error', function(event) {
+  console.error('Global error caught:', event.error);
+  
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  
+  // Show error notification
+  if (typeof showNotification === 'function') {
+    showNotification('error', 'Error', 'An unexpected error occurred. Please try again.');
+  }
+  
+  // Reset any buttons that might be in loading state
+  if (typeof resetGenerateButton === 'function') {
+    resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      return;
+    }
+    
+    // Export using Electron API
+    const result = await window.electronAPI.invoke('export-report', { 
+      format: 'csv', 
+      reportId: reportStore.currentReport.id 
+    });
+    
+    if (result.success) {
+      showNotification('success', 'CSV Generated', `Report has been exported to CSV: ${result.filePath}`);
+    } else {
+      throw new Error(result.error || 'Failed to export report to CSV');
+    }
+  } catch (error) {
+    console.error('Error exporting report to CSV:', error);
+    showNotification('error', 'Error Exporting CSV', error.message);
+  }
+}
+
+/**
+ * Show a notification
+ * @param {string} type - The type of notification (success, error, warning, info)
+ * @param {string} title - The notification title
+ * @param {string|Error} message - The notification message or error object
+ */
+function showNotification(type, title, message) {
+  try {
+    // Format the message if it's an error object
+    let formattedMessage = message;
+    if (message instanceof Error) {
+      formattedMessage = message.message || "An unknown error occurred";
+    } else if (typeof message === 'object') {
+      formattedMessage = JSON.stringify(message) || "An unknown error occurred";
+    }
+    
+    if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+      window.NotificationSystem.show(formattedMessage, {
+        type: type,
+        title: title
+      });
+    } else {
+      // Fallback if notifications module is not available
+      console.warn(`${title}: ${formattedMessage}`);
+      alert(`${title}: ${formattedMessage}`);
+    }
+  } catch (err) {
+    // Last resort fallback
+    console.error('Error showing notification:', err);
+    alert(`${title}: Unable to display notification details`);
+  }
+}
+
+/**
+ * Format currency in TZS (Tanzanian Shillings)
+ * @param {number} amount - The amount to format
+ * @returns {string} Formatted currency
+ */
+function formatCurrency(amount) {
+  if (amount === undefined || amount === null) return 'TZS 0';
+  return new Intl.NumberFormat('sw-TZ', {
+    style: 'currency',
+    currency: 'TZS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+/**
+ * Emergency fix to directly update report metrics in the DOM
+ * This bypasses all the normal rendering functions and directly sets the values
+ */
+function emergencyFixReportDisplay() {
+  console.log('EMERGENCY FIX: Directly updating report metrics in DOM');
+
+  try {
+    // Get all inventory data directly
+    window.electronAPI.getInventory().then(inventory => {
+      if (!inventory || inventory.length === 0) {
+        console.error('No inventory data available for emergency fix');
+        return;
+      }
+
+      console.log('EMERGENCY FIX: Got inventory data with', inventory.length, 'items');
+
+      // Calculate metrics
+      const totalItems = inventory.length;
+      let totalValue = 0;
+      let lowStockItems = 0;
+      const categoriesSet = new Set();
+
+      // Process inventory for metrics
+      inventory.forEach(item => {
+        const quantity = Number(item.quantity) || 0;
+        const price = Number(item.price) || 0;
+        const threshold = Number(item.alertThreshold) || 10;
+        
+        // Calculate total value
+        totalValue += quantity * price;
+        
+        // Check for low stock
+        if (quantity <= threshold) {
+          lowStockItems++;
+        }
+        
+        // Count unique categories
+        if (item.category) {
+          categoriesSet.add(item.category);
+        }
+      });
+
+      const categories = categoriesSet.size;
+
+      // Format currency
+      const formattedValue = new Intl.NumberFormat('sw-TZ', {
+        style: 'currency',
+        currency: 'TZS',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(totalValue);
+
+      console.log('EMERGENCY FIX: Calculated metrics', { totalItems, totalValue, lowStockItems, categories });
+
+      // Get all stat highlight elements
+      const statHighlights = document.querySelectorAll('.stat-highlight');
+      
+      // Directly update the DOM with the calculated values
+      if (statHighlights.length >= 4) {
+        // Total Items (first card)
+        statHighlights[0].textContent = totalItems;
+        
+        // Total Value (second card)
+        statHighlights[1].textContent = formattedValue;
+        
+        // Low Stock Items (third card)
+        statHighlights[2].textContent = lowStockItems;
+        
+        // Categories (fourth card)
+        statHighlights[3].textContent = categories;
+        
+        console.log('EMERGENCY FIX: Updated stat highlights in DOM');
+      } else {
+        console.error('EMERGENCY FIX: Could not find stat highlight elements in DOM');
+      }
+
+      // If there's no data table, create one
+      const dataTable = document.getElementById('report-data-table');
+      if (dataTable) {
+        let tableHTML = `
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col">Category</th>
+              <th scope="col">In Stock</th>
+              <th scope="col">Value</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        
+        // Add table rows
+        inventory.forEach(item => {
+          const quantity = Number(item.quantity) || 0;
+          const price = Number(item.price) || 0;
+          const threshold = Number(item.alertThreshold) || 10;
+          
+          const value = quantity * price;
+          const isLowStock = quantity <= threshold;
+          
+          tableHTML += `
+            <tr>
+              <td style="color: #ffffff !important;">${item.description || item.name || 'Unknown'}</td>
+              <td style="color: #ffffff !important;">${item.category || 'Uncategorized'}</td>
+              <td style="color: #ffffff !important;">${quantity}</td>
+              <td style="color: #ffffff !important;">${new Intl.NumberFormat('sw-TZ', {
+                style: 'currency',
+                currency: 'TZS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value)}</td>
+              <td style="color: #ffffff !important;">
+                <span class="badge ${isLowStock ? 'bg-danger' : 'bg-success'}" style="color: #ffffff !important;">
+                  ${isLowStock ? 'Low Stock' : 'In Stock'}
+                </span>
+              </td>
+            </tr>
+          `;
+        });
+        
+        tableHTML += '</tbody>';
+        dataTable.innerHTML = tableHTML;
+        console.log('EMERGENCY FIX: Updated data table in DOM');
+      }
+    }).catch(error => {
+      console.error('EMERGENCY FIX: Error fetching inventory data:', error);
+    });
+  } catch (error) {
+    console.error('EMERGENCY FIX: Failed to update report metrics:', error);
+  }
+}
+
+// Call the emergency fix function whenever a report is viewed
+const originalDisplayReport = displayReport;
+displayReport = function(report) {
+  originalDisplayReport(report);
+  
+  // Add a slight delay to ensure DOM elements are rendered
+  setTimeout(() => {
+    if (typeof emergencyFixReportDisplay === 'function') {
+      emergencyFixReportDisplay();
+    }
+  }, 200);
+};
+
+// Also call the emergency fix function for any existing reports
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    
+  try {
+    
+  // Additional listener for report container becoming visible
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.target.style.display === 'block') {
+        if (typeof emergencyFixReportDisplay === 'function') {
+          emergencyFixReportDisplay();
+        }
+      }
+    
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+    }
+  }
+
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+        }
+      }
+    });
+  });
+
+  const reportContainer = document.getElementById('current-report-container');
+  if (reportContainer) {
+    observer.observe(reportContainer, { attributes: true, attributeFilter: ['style'] });
+  }
+});
+
+// Ensure all icons are visible by modifying their CSS properties
+function enhanceIconVisibility() {
+  // Select all icon elements
+  const iconElements = document.querySelectorAll('i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"]');
+  
+  // Apply basic visibility styles to each icon, without glowing effects
+  iconElements.forEach(icon => {
+    icon.style.color = '#ffffff';
+    icon.style.opacity = '1';
+  });
+  
+  // Select all SVG elements
+  const svgElements = document.querySelectorAll('svg, svg *');
+  
+  // Apply basic visibility styles to each SVG, without glowing effects
+  svgElements.forEach(svg => {
+    svg.style.fill = '#ffffff';
+  });
+  
+  // Select all chart-related elements
+  const chartElements = document.querySelectorAll('.chart-container, .chart-wrapper, canvas, [class*="chart-"], [id*="chart-"]');
+  
+  // Add global styles to the document
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"] {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+    
+    svg, svg * {
+      fill: #ffffff !important;
+      stroke: #ffffff !important;
+    }
+    
+    .chart-title, .chart-label, .legend-item {
+      color: #ffffff !important;
+      font-weight: bold !important;
+    }
+  `;
+  
+  document.head.appendChild(styleElement);
+  
+  console.log('Enhanced visibility of icons and chart elements (no glow)');
+}
+
+// Call the function when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+  
+  // Call it again after a short delay to catch dynamically created elements
+  setTimeout(enhanceIconVisibility, 1000);
+  setTimeout(enhanceIconVisibility, 2000);
+});
+
+// Also call the function when the window finishes loading
+window.addEventListener('load', function() {
+  console.log('Window loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+});
+
+// Enhance visibility after any AJAX requests complete
+const originalXHR = window.XMLHttpRequest;
+window.XMLHttpRequest = function() {
+  const xhr = new originalXHR();
+  const originalOnLoad = xhr.onload;
+  
+  xhr.onload = function() {
+    if (originalOnLoad) {
+      originalOnLoad.apply(this, arguments);
+    }
+    setTimeout(enhanceIconVisibility, 500);
+  };
+  
+  return xhr;
+}; 
+
+/**
+ * Check if charts are rendering properly and provide fallback if needed
+ */
+function checkChartsRendering() {
+  console.log('Checking if charts are rendering properly');
+  
+  // Wait a bit to ensure charts have had time to render
+  setTimeout(() => {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    const emptyCharts = [];
+    
+    chartContainers.forEach((container, index) => {
+      // Check if the chart has any visible content
+      const canvas = container.querySelector('canvas');
+      if (canvas) {
+        try {
+          const ctx = canvas.getContext('2d');
+          // Only check if canvas has a reasonable size
+          if (canvas.width > 10 && canvas.height > 10) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Check if the canvas is empty (all pixels are transparent or black)
+            let isEmpty = true;
+            let nonTransparentPixels = 0;
+            
+            // Sample pixels (check every 10th pixel to save performance)
+            for (let i = 0; i < data.length; i += 40) {
+              const alpha = data[i + 3]; // Alpha channel
+              // If we have non-transparent pixels
+              if (alpha > 10) {
+                nonTransparentPixels++;
+                // If we have enough non-transparent pixels, consider it non-empty
+                if (nonTransparentPixels > 10) {
+                  isEmpty = false;
+                  break;
+                }
+              }
+            }
+            
+            if (isEmpty) {
+              console.warn(`Chart ${index} appears to be empty`);
+              emptyCharts.push(index);
+            }
+          } else {
+            console.warn(`Chart ${index} has invalid dimensions: ${canvas.width}x${canvas.height}`);
+            emptyCharts.push(index);
+          }
+        } catch (error) {
+          console.error(`Error checking chart ${index}:`, error);
+        }
+      }
+    });
+    
+    // If we have empty charts, try to fix them
+    if (emptyCharts.length > 0) {
+      console.warn(`Found ${emptyCharts.length} empty charts. Attempting to fix...`);
+      
+      // Get the current report
+      const currentReport = getCurrentReport();
+      if (!currentReport) {
+        console.error('No current report found');
+        return;
+      }
+      
+      console.log('Current report:', currentReport);
+      
+      // Check if the report has valid data
+      if (!currentReport.data) {
+        console.error('Report has no data');
+        return;
+      }
+      
+      // Check specifically for sales and profit reports
+      if (currentReport.type === 'sales' || currentReport.type === 'profit') {
+        console.log(`Fixing ${currentReport.type} report charts`);
+        
+        // Ensure the report has valid chart configurations
+        if (!currentReport.charts || !Array.isArray(currentReport.charts)) {
+          console.log('Regenerating chart configurations');
+          currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        }
+        
+        // Add fallback data if needed
+        if (currentReport.type === 'sales') {
+          // Ensure sales data exists
+          if (!currentReport.data.sales || currentReport.data.sales.length === 0) {
+            console.log('Adding fallback sales data');
+            currentReport.data.sales = [
+              { date: new Date().toISOString(), total_amount: 0, id: 'fallback-1' }
+            ];
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.salesByDate || currentReport.data.salesByDate.length === 0) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.salesByDate = [
+              { date: yesterday.toISOString(), total: 0 },
+              { date: today.toISOString(), total: 0 }
+            ];
+          }
+        } else if (currentReport.type === 'profit') {
+          // Ensure profit data exists
+          if (currentReport.data.totalRevenue === undefined) {
+            console.log('Adding fallback profit data');
+            currentReport.data.totalRevenue = 0;
+            currentReport.data.totalCost = 0;
+            currentReport.data.grossProfit = 0;
+            currentReport.data.profitMargin = 0;
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.timeline || !currentReport.data.timeline.labels) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.timeline = {
+              labels: [yesterday.toISOString().split('T')[0], today.toISOString().split('T')[0]],
+              revenue: [0, 0],
+              cost: [0, 0],
+              profit: [0, 0]
+            };
+          }
+          
+          // Ensure product data exists
+          if (!currentReport.data.productProfits || currentReport.data.productProfits.length === 0) {
+            console.log('Adding fallback product data');
+            currentReport.data.productProfits = [
+              {
+                id: 'fallback-1',
+                name: 'No Sales Data',
+                revenue: 0,
+                cost: 0,
+                profit: 0,
+                quantity: 0,
+                margin: 0
+              }
+            ];
+          }
+        }
+        
+        // Regenerate charts with the enhanced data
+        currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        
+        // Force re-render of the charts
+        if (window.VisualReports && typeof window.VisualReports.generateCharts === 'function') {
+          console.log('Re-rendering charts for current report');
+          window.VisualReports.generateCharts(currentReport, 'report-charts-container');
+        }
+      }
+    }
+  }, 1000); // Check after 1 second
+}
+
+/**
+ * Get the current report being displayed
+ * @returns {Object|null} The current report or null
+ */
+function getCurrentReport() {
+  try {
+    // Try to get the report from the global variable or data attribute
+    if (window.currentReport) {
+      return window.currentReport;
+    }
+    
+    // Try to get from data attribute
+    const reportContainer = document.getElementById('report-container');
+    if (reportContainer && reportContainer.dataset.reportId) {
+      const reportId = reportContainer.dataset.reportId;
+      const reportData = reportContainer.dataset.reportData;
+      
+      if (reportData) {
+        try {
+          return JSON.parse(reportData);
+        } catch (e) {
+          console.error('Error parsing report data:', e);
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting current report:', error);
+    return null;
+  }
+}
+/**
+ * Reset the generate button to its default state
+ */
+function resetGenerateButton() {
+  elements.generateReportBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Report';
+  elements.generateReportBtn.disabled = false;
+}

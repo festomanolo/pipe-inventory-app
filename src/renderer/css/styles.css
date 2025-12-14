@@ -1,0 +1,939 @@
+/* Document Selection Modal Styles */
+.document-selection-modal .modal-header {
+  background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+  color: white;
+}
+
+.document-selection-modal .modal-title {
+  color: white;
+}
+
+.document-selection-modal .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.doc-choice-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.doc-choice-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.doc-choice-card.selected {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+.doc-choice-card .card-text {
+  color: #333333 !important;
+}
+
+.document-actions {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+/* Sales Details Modal Styles */
+.sales-details-modal .modal-header {
+  background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+  color: white;
+}
+
+.sales-details-modal .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.sales-details-modal .btn-primary {
+  background: #6200ea;
+  border-color: #6200ea;
+}
+
+.sales-details-modal .btn-outline-primary {
+  color: #6200ea;
+  border-color: #6200ea;
+}
+
+.sales-details-modal .btn-outline-primary:hover {
+  background-color: #6200ea;
+  color: white;
+}
+
+/* Receipt Preview Styles */
+.receipt-preview {
+  background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+  color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.receipt-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #9c27b0, #d500f9);
+}
+
+.receipt-preview .text-white {
+  color: #ffffff !important;
+}
+
+.receipt-preview .text-white-50 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.receipt-preview .text-black {
+  color: #000000 !important;
+}
+
+.receipt-preview table {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.receipt-preview table th,
+.receipt-preview table td {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Invoice Preview Styles */
+.invoice-preview {
+  background: #ffffff;
+  color: #212121;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.invoice-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, #2196f3, #0d47a1);
+}
+
+.invoice-preview .text-dark {
+  color: #212121 !important;
+}
+
+/* PDF Generation Notification */
+.pdf-notification {
+  background-color: #f3e5f5;
+  border-left: 4px solid #6200ea;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.pdf-notification .title {
+  color: #6200ea;
+  font-weight: bold;
+}
+
+.pdf-notification .content {
+  color: #333333;
+}
+
+.pdf-notification .actions button {
+  margin-right: 8px;
+}
+
+/* Additional styles to ensure text visibility in receipt/invoice previews */
+.receipt-preview .text-dark,
+.invoice-preview .text-dark {
+  color: #212529 !important;
+}
+
+.modal-backdrop {
+  opacity: 0.5 !important;
+  background-color: #000;
+}
+
+.modal {
+  z-index: 1050 !important;
+}
+
+/* Fix for lingering modal backdrop */
+body.modal-open {
+  overflow: hidden;
+  padding-right: 17px; /* Scrollbar compensation */
+}
+
+/* Ensure proper contrast */
+.table-bordered td, 
+.table-bordered th,
+.table-sm td,
+.table-sm th {
+  color: #212529 !important;
+}
+
+.receipt-preview h5,
+.invoice-preview h5,
+.receipt-preview h3,
+.invoice-preview h3 {
+  color: white !important;
+}
+
+/* Override all text colors in receipt with high specificity */
+#saleDetailsModal .receipt-preview h3,
+#saleDetailsModal .receipt-preview h5,
+#saleDetailsModal .receipt-preview p,
+#saleDetailsModal .receipt-preview strong,
+#saleDetailsModal .receipt-preview table th,
+#saleDetailsModal .receipt-preview table td,
+#saleDetailsModal .receipt-preview table tfoot td,
+#saleDetailsModal .receipt-preview .text-dark,
+#saleDetailsModal .receipt-preview .text-end,
+#saleDetailsModal .receipt-preview .text-center {
+  color: white !important;
+}
+
+/* Remove any conflicting style */
+.receipt-preview .text-dark {
+  color: white !important;
+}
+
+/* Remove conflicting rule */
+.receipt-preview h5, 
+.receipt-preview h3 {
+  color: white !important;
+}
+
+/* This rule is causing the conflict - remove it completely */
+.table-bordered td, 
+.table-bordered th,
+.table-sm td,
+.table-sm th {
+  color: #212529;
+}
+
+/* Override table text in receipt preview specifically */
+.receipt-preview .table-bordered td, 
+.receipt-preview .table-bordered th,
+.receipt-preview .table-sm td,
+.receipt-preview .table-sm th {
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Print styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printable-content,
+  #printable-content * {
+    visibility: visible;
+  }
+  
+  #printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .receipt-preview {
+    background: white !important;
+    box-shadow: none !important;
+  }
+  
+  .receipt-preview::before {
+    display: none;
+  }
+  
+  .print-hide {
+    display: none !important;
+  }
+  
+  .receipt-preview .text-white,
+  .receipt-preview .text-white-50,
+  .receipt-preview th,
+  .receipt-preview td,
+  .receipt-preview p,
+  .receipt-preview h1,
+  .receipt-preview h2,
+  .receipt-preview h3,
+  .receipt-preview h4,
+  .receipt-preview h5,
+  .receipt-preview h6,
+  .receipt-preview strong {
+    color: black !important;
+  }
+}
+
+/* Loading spinner */
+.loader {
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid #8e24aa;
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Low stock blinking animation */
+@keyframes blink-danger {
+  0% { background-color: rgba(220, 53, 69, 0.1); }
+  50% { background-color: rgba(220, 53, 69, 0.6); }
+  100% { background-color: rgba(220, 53, 69, 0.1); }
+}
+
+.low-stock-blink {
+  animation: blink-danger 1s infinite;
+  font-weight: bold !important;
+}
+
+.low-stock-blink td {
+  color: #000000 !important;
+}
+
+/* Make the status badge also blink for low stock items */
+.low-stock-blink .status-warning {
+  animation: pulse-warning 1s infinite;
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #000000;
+  border: 1px solid #dc3545;
+  font-weight: bold;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 15px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 0.85rem;
+  min-width: 100px;
+}
+
+.status-success {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.status-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #fd7e14;
+  border: 1px solid #fd7e14;
+  animation: pulse-warning 1.5s infinite;
+}
+
+.status-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+@keyframes pulse-warning {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Notification styling for consistency */
+.toast-container .toast,
+.toast-container .toast *,
+.toast-container .toast-header, 
+.toast-container .toast-body,
+.toast-container .toast-header strong,
+.toast-container .toast-header small,
+.toast-container .toast-body p,
+.toast-container .toast-body ul,
+.toast-container .toast-body li,
+.toast-container .toast-body strong {
+  color: #000000 !important;
+}
+
+.toast-container .btn-close {
+  filter: none !important; /* Ensure the close button is visible against any background */
+}
+
+/* Extra high specificity rule for bootstrap toast components */
+body .toast-container .toast .toast-header,
+body .toast-container .toast .toast-body,
+#app-container .toast-container .toast .toast-header,
+#app-container .toast-container .toast .toast-body {
+  color: #000000 !important;
+}
+
+/* Override any conflicting rules for notification text */
+.notification-toast,
+.notification-toast *,
+.alert,
+.alert * {
+  color: #000000 !important;
+}
+
+/* Enhanced Low stock blinking animation - more eye-catching */
+@keyframes blink-danger {
+  0% { background-color: rgba(220, 53, 69, 0.1); }
+  50% { background-color: rgba(220, 53, 69, 0.6); }
+  100% { background-color: rgba(220, 53, 69, 0.1); }
+}
+
+/* Enhanced pulse animation for status badges */
+@keyframes pulse-warning {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Global Notification Text Color Overrides - High Specificity */
+body .toast *,
+body .toast-container *,
+body .toast-header *,
+body .toast-body *,
+body .alert *,
+body .notification *,
+body [role="alert"] *,
+body #toast-container *,
+body .toastr *,
+body .notification-toast *,
+body #snotify *,
+body .snackbar *,
+[class*="notification"] *,
+[id*="notification"] *,
+[class*="alert"] *,
+[id*="alert"] *,
+[class*="toast"] *,
+[id*="toast"] * {
+  color: #000000 !important;
+}
+
+/* Override for any !important white text in notifications */
+body .toast .text-white,
+body .toast-container .text-white,
+body .toast-header .text-white,
+body .toast-body .text-white,
+body .alert .text-white,
+body .notification .text-white,
+body [role="alert"] .text-white,
+body #toast-container .text-white,
+body .toastr .text-white,
+body .notification-toast .text-white,
+body #snotify .text-white,
+[class*="notification"] .text-white,
+[id*="notification"] .text-white,
+[class*="alert"] .text-white,
+[id*="alert"] .text-white,
+[class*="toast"] .text-white,
+[id*="toast"] .text-white {
+  color: #000000 !important;
+}
+
+/* Ensure close buttons remain visible */
+.toast .btn-close,
+.toast-container .btn-close,
+.alert .btn-close,
+.notification .btn-close,
+[role="alert"] .btn-close,
+#toast-container .btn-close,
+.toastr .btn-close,
+.notification-toast .btn-close,
+#snotify .btn-close,
+[class*="notification"] .btn-close,
+[id*="notification"] .btn-close,
+[class*="alert"] .btn-close,
+[id*="alert"] .btn-close,
+[class*="toast"] .btn-close,
+[id*="toast"] .btn-close {
+  filter: none !important;
+  opacity: 0.8;
+}
+
+/* Inline notification styles for dynamically added content */
+html body .notification-content p,
+html body .notification-content li,
+html body .notification-content span,
+html body .notification-content div,
+html body .notification-content h1,
+html body .notification-content h2,
+html body .notification-content h3,
+html body .notification-content h4,
+html body .notification-content h5,
+html body .notification-content h6,
+html body .notification-content a,
+html body .notification-content strong,
+html body .notification-content em,
+html body .notification-content small {
+  color: #000000 !important;
+}
+
+/* Make inventory and sales table headers blue - High Specificity */
+html body #inventory-table thead tr,
+html body #sales-table thead tr,
+html body .table-container .table thead tr,
+html body .table thead tr,
+html body .table-responsive .table thead tr,
+html body table.table thead tr,
+html body .blue-header-table thead tr,
+html body .main-content table thead tr {
+  background-color: #3b82f6 !important; /* Blue background */
+  color: white !important;
+}
+
+html body #inventory-table thead th,
+html body #sales-table thead th,
+html body .table-container .table thead th,
+html body .table thead th,
+html body .table-responsive .table thead th,
+html body table.table thead th,
+html body .blue-header-table thead th,
+html body .main-content table thead th {
+  color: white !important;
+  font-weight: bold !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  padding: 12px 8px !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  vertical-align: middle !important;
+}
+
+/* Ensure header text is white even with global overrides - High Specificity */
+html body #inventory-table thead th *,
+html body #sales-table thead th *,
+html body .table-container .table thead th *,
+html body .table thead th *,
+html body .table-responsive .table thead th *,
+html body table.table thead th *,
+html body .blue-header-table thead th *,
+html body .main-content table thead th * {
+  color: white !important;
+}
+
+/* Add a slight shadow to the header for better visibility */
+html body #inventory-table thead,
+html body #sales-table thead,
+html body .table-container .table thead,
+html body .table thead,
+html body .table-responsive .table thead,
+html body table.table thead,
+html body .blue-header-table thead,
+html body .main-content table thead {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Blue header table class for consistent styling - High Specificity */
+html body .blue-header-table thead tr {
+  background-color: #3b82f6 !important;
+}
+
+html body .blue-header-table thead th {
+  color: white !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Apply automatic blue headers to all tables in the main content area - High Specificity */
+html body .main-content table:not(.no-blue-header) thead tr {
+  background-color: #3b82f6 !important;
+}
+
+html body .main-content table:not(.no-blue-header) thead th {
+  color: white !important;
+  font-weight: bold !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Directly target table headers with highly specific selectors to ensure blue styling */
+table thead tr,
+thead tr,
+table > thead > tr,
+.table > thead > tr,
+.table thead > tr,
+table thead:first-child tr:first-child {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+table thead th,
+thead th,
+table > thead > tr > th,
+.table > thead > tr > th,
+.table thead > tr > th,
+table thead:first-child tr:first-child th {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: bold !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  padding: 12px 8px !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  vertical-align: middle !important;
+}
+
+/* Global reset for icon glow effects */
+i, 
+.fa, 
+.fas, 
+.far, 
+.fab, 
+.bi, 
+[class^="icon-"], 
+[class*=" icon-"],
+.report-icon i,
+.sidebar i,
+.content-header i,
+.card i {
+  text-shadow: none !important;
+  filter: none !important;
+  color: white !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Reset for SVG elements */
+svg, 
+svg * {
+  filter: none !important;
+  drop-shadow: none !important;
+}
+
+/* Remove any glow effects from the immediate script that runs on page load */
+.splash-title,
+.splash-subtitle {
+  text-shadow: none !important;
+  filter: none !important;
+} 
+
+/* Make modal close buttons red */
+.btn-close-red {
+  filter: none !important;
+  color: #dc3545 !important;
+  fill: #dc3545 !important;
+  opacity: 1 !important;
+}
+.btn-close-red:before, .btn-close-red:after {
+  color: #dc3545 !important;
+  fill: #dc3545 !important;
+}
+.btn-close-red svg, .btn-close-red::after, .btn-close-red::before {
+  color: #dc3545 !important;
+  fill: #dc3545 !important;
+} 
+
+/* --- macOS-inspired UI/UX enhancements --- */
+
+body, .modal-content, .card, .table, .form-control, .form-select, .btn, .list-group-item {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 4px 0 rgba(0,0,0,0.08);
+}
+
+.modal-content, .card {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(12px) saturate(1.2);
+  border: 1px solid rgba(200,200,200,0.25) !important;
+}
+
+.table {
+  background: rgba(255,255,255,0.92) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  border: none !important;
+  padding: 14px 16px !important;
+  font-size: 15px;
+}
+
+.form-control, .form-select {
+  border-radius: 12px !important;
+  border: 1.5px solid #e0e0e0 !important;
+  background: rgba(255,255,255,0.85) !important;
+  box-shadow: none !important;
+  font-size: 16px;
+  padding: 10px 14px !important;
+  transition: border-color 0.2s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.10) !important;
+}
+
+.btn {
+  border-radius: 12px !important;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 10px 24px !important;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  border: none !important;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(90deg, #007aff 0%, #0051a8 100%) !important;
+  color: #fff !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: linear-gradient(90deg, #0051a8 0%, #007aff 100%) !important;
+  box-shadow: 0 4px 16px 0 rgba(0,122,255,0.10);
+}
+.btn-secondary {
+  background: #f5f5f7 !important;
+  color: #222 !important;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+  background: #e5e5ea !important;
+}
+
+.list-group-item {
+  background: rgba(255,255,255,0.85) !important;
+  color: #222 !important;
+  border: none !important;
+  margin-bottom: 6px;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+.list-group-item-action:active, .list-group-item-action:focus, .list-group-item-action:hover {
+  background: #e5e5ea !important;
+  color: #007aff !important;
+}
+
+.modal-header, .modal-footer {
+  border: none !important;
+  background: transparent !important;
+}
+
+.card-header {
+  background: transparent !important;
+  border-bottom: none !important;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222 !important;
+}
+
+.card {
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08) !important;
+  border: none !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.10);
+  border-radius: 8px;
+}
+
+/* Subtle gradient for app background */
+body {
+  background: linear-gradient(120deg, #f5f6fa 0%, #e5e9f2 100%) !important;
+}
+
+/* Receipt/Invoice preview tweaks for macOS look */
+.receipt-preview, .invoice-preview {
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.97) !important;
+  color: #222 !important;
+  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10);
+}
+.receipt-preview h3, .invoice-preview h3, .receipt-preview h5, .invoice-preview h5 {
+  color: #007aff !important;
+}
+
+/* Make modal close buttons more macOS-like */
+.btn-close, .btn-close-red {
+  border-radius: 50% !important;
+  width: 28px !important;
+  height: 28px !important;
+  background: #fff !important;
+  border: 1.5px solid #e0e0e0 !important;
+  color: #ff3b30 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  transition: box-shadow 0.2s;
+}
+.btn-close:hover, .btn-close-red:hover {
+  box-shadow: 0 2px 8px 0 rgba(255,59,48,0.10);
+  background: #ffeaea !important;
+}
+
+/* Subtle shadow for dropdowns */
+.form-select {
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+}
+
+/* End macOS-inspired UI/UX enhancements */ 
+
+/* --- macOS-inspired Dashboard Enhancements --- */
+
+.dashboard-container, .dashboard-widgets, .dashboard-section, .dashboard-card, .dashboard-summary, .dashboard-analytics, .dashboard-header, .dashboard-widget, .dashboard-panel {
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.85) !important;
+  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.10), 0 1.5px 4px 0 rgba(0,0,0,0.08);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(200,200,200,0.18) !important;
+  padding: 24px 28px !important;
+  margin-bottom: 28px;
+}
+
+.dashboard-header, .dashboard-section-title, .dashboard-title, .dashboard-summary-title {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  color: #222 !important;
+  margin-bottom: 18px !important;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-widget, .dashboard-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 120px;
+  margin-bottom: 18px;
+  background: rgba(255,255,255,0.92) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08) !important;
+  border: none !important;
+  padding: 20px 24px !important;
+}
+
+.dashboard-widget-title, .dashboard-card-title {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #007aff !important;
+  margin-bottom: 8px !important;
+}
+
+.dashboard-widget-value, .dashboard-card-value {
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  color: #222 !important;
+  margin-bottom: 0;
+}
+
+.dashboard-widget-label, .dashboard-card-label {
+  font-size: 1rem !important;
+  color: #888 !important;
+  margin-top: 2px;
+}
+
+.dashboard-panel {
+  background: rgba(245,246,250,0.95) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06) !important;
+  padding: 18px 22px !important;
+}
+
+.dashboard-btn, .dashboard-action-btn {
+  border-radius: 12px !important;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 10px 24px !important;
+  background: linear-gradient(90deg, #007aff 0%, #0051a8 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.dashboard-btn:hover, .dashboard-action-btn:hover {
+  background: linear-gradient(90deg, #0051a8 0%, #007aff 100%) !important;
+  box-shadow: 0 4px 16px 0 rgba(0,122,255,0.10);
+}
+
+.dashboard-table, .dashboard-table th, .dashboard-table td {
+  border-radius: 12px !important;
+  background: rgba(255,255,255,0.97) !important;
+  color: #222 !important;
+  font-size: 15px;
+  border: none !important;
+  padding: 12px 16px !important;
+}
+
+.dashboard-section {
+  margin-bottom: 36px !important;
+}
+
+/* End macOS-inspired Dashboard Enhancements */ 
+
+/* --- macOS-inspired Dashboard White Shadows & Glassy Effects --- */
+
+.dashboard-container, .dashboard-widgets, .dashboard-section, .dashboard-card, .dashboard-summary, .dashboard-analytics, .dashboard-header, .dashboard-widget, .dashboard-panel {
+  box-shadow: 0 8px 32px 0 rgba(255,255,255,0.25), 0 1.5px 4px 0 rgba(0,0,0,0.04) !important;
+  background: rgba(255,255,255,0.75) !important;
+  border: 1.5px solid rgba(255,255,255,0.45) !important;
+  backdrop-filter: blur(18px) saturate(1.3);
+}
+
+.dashboard-widget, .dashboard-card {
+  box-shadow: 0 4px 24px 0 rgba(255,255,255,0.18), 0 1.5px 4px 0 rgba(0,0,0,0.04) !important;
+  background: rgba(255,255,255,0.82) !important;
+  border: 1.5px solid rgba(255,255,255,0.35) !important;
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.dashboard-table, .dashboard-table th, .dashboard-table td {
+  background: rgba(255,255,255,0.98) !important;
+  box-shadow: 0 2px 8px 0 rgba(255,255,255,0.10) !important;
+  border: 1.5px solid rgba(255,255,255,0.25) !important;
+}
+
+/* Recent Sales & Low Stock Items - macOS glassy style */
+.dashboard-recent-sales, .dashboard-low-stock, .dashboard-list, .dashboard-list-item {
+  background: rgba(255,255,255,0.68) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px 0 rgba(255,255,255,0.18) !important;
+  border: 1.5px solid rgba(255,255,255,0.32) !important;
+  backdrop-filter: blur(12px) saturate(1.2);
+  padding: 14px 18px !important;
+  margin-bottom: 10px;
+  transition: box-shadow 0.18s, background 0.18s;
+}
+.dashboard-list-item:hover, .dashboard-recent-sales:hover, .dashboard-low-stock:hover {
+  background: rgba(255,255,255,0.90) !important;
+  box-shadow: 0 6px 24px 0 rgba(255,255,255,0.22) !important;
+}
+
+.dashboard-list-title, .dashboard-list-header {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #007aff !important;
+  margin-bottom: 8px !important;
+}
+
+.dashboard-list-label, .dashboard-list-meta {
+  color: #888 !important;
+  font-size: 0.98rem !important;
+}
+
+.dashboard-list-value, .dashboard-list-amount {
+  color: #222 !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+}
+
+/* End macOS-inspired Dashboard White Shadows & Glassy Effects */ 

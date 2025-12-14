@@ -1,0 +1,84 @@
+// Import required Electron modules
+const { contextBridge, ipcRenderer } = require('electron');
+
+// Check if app is in development mode
+const isDevelopment = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+console.log('Preload: Running in development mode?', isDevelopment);
+
+// Export Electron API for renderer process
+contextBridge.exposeInMainWorld('electronAPI', {
+  // System handlers
+  platform: process.platform,
+  minimize: () => ipcRenderer.send('minimize'),
+  maximize: () => ipcRenderer.send('maximize'),
+  close: () => ipcRenderer.send('close'),
+  isDev: isDevelopment,
+  
+  // Dialog handlers
+  showDialog: (options) => ipcRenderer.invoke('show-dialog', options),
+  showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
+  showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+  
+  // File system handlers
+  readFile: (path) => ipcRenderer.invoke('read-file', path),
+  writeFile: (path, content) => ipcRenderer.invoke('write-file', path, content),
+  savePdf: (options) => ipcRenderer.invoke('save-pdf', options),
+  
+  // General inventory handlers
+  getInventory: () => ipcRenderer.invoke('get-inventory'),
+  getInventoryItem: (id) => ipcRenderer.invoke('get-inventory-item', id),
+  addInventoryItem: (item) => ipcRenderer.invoke('add-inventory-item', item),
+  updateInventoryItem: (item) => ipcRenderer.invoke('update-inventory-item', item),
+  deleteInventoryItem: (id) => ipcRenderer.invoke('delete-inventory-item', id),
+  
+  // Product type handlers
+  getProductTypes: () => ipcRenderer.invoke('get-product-types'),
+  
+  // Sales handlers
+  getAllSales: () => ipcRenderer.invoke('get-all-sales'),
+  getSales: () => ipcRenderer.invoke('get-sales'),
+  addSale: (sale) => ipcRenderer.invoke('add-sale', sale),
+  createSale: (sale) => ipcRenderer.invoke('create-sale', sale),
+  getSaleById: (id) => ipcRenderer.invoke('get-sale-by-id', id),
+  
+  // Customer handlers
+  getCustomers: () => ipcRenderer.invoke('get-customers'),
+  getCustomerById: (id) => ipcRenderer.invoke('get-customer-by-id', id),
+  addCustomer: (customer) => ipcRenderer.invoke('add-customer', customer),
+  updateCustomer: (customer) => ipcRenderer.invoke('update-customer', customer),
+  deleteCustomer: (id) => ipcRenderer.invoke('delete-customer', id),
+  updateCustomerPurchaseStats: (data) => ipcRenderer.invoke('update-customer-purchase-stats', data),
+  
+  // Report handlers
+  getReports: () => ipcRenderer.invoke('get-reports'),
+  getReportById: (id) => ipcRenderer.invoke('get-report-by-id', id),
+  addReport: (report) => ipcRenderer.invoke('add-report', report),
+  updateReport: (report) => ipcRenderer.invoke('update-report', report),
+  deleteReport: (id) => ipcRenderer.invoke('delete-report', id),
+  generateInventoryReport: () => ipcRenderer.invoke('generate-inventory-report'),
+  generateSalesReport: (period) => ipcRenderer.invoke('get-sales-report', period),
+  generateProfitReport: (startDate, endDate) => ipcRenderer.invoke('generate-profit-report', startDate, endDate),
+  getCustomerReport: (params) => ipcRenderer.invoke('get-customer-report', params),
+  getDailyReportSettings: () => ipcRenderer.invoke('get-daily-report-settings'),
+  
+  // Database initialization
+  initializeDatabase: () => ipcRenderer.invoke('initialize-database'),
+  
+  // Miscellaneous
+  openExternalLink: (url) => ipcRenderer.invoke('open-external-link', url),
+  
+  // Logs handlers
+  getLogs: () => ipcRenderer.invoke('get-logs'),
+  clearLogs: () => ipcRenderer.invoke('clear-logs'),
+  exportLogs: (options) => ipcRenderer.invoke('export-logs', options),
+  onNewLog: (callback) => {
+    const subscription = (event, log) => callback(log);
+    ipcRenderer.on('new-log', subscription);
+    return () => {
+      ipcRenderer.removeListener('new-log', subscription);
+    };
+  },
+  
+  // Navigation
+  navigateTo: (page) => safeIpc('navigate-to', page),
+}); 

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliva Hardware - Login</title>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css/win-fix.css">
+  <style>
+    /* macOS-style login page */
+    :root {
+      --primary-color: #1a1a2e;
+      --accent-color: #4cc9f0;
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --error-color: #ff6b6b;
+      --success-color: #51cf66;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .login-screen {
+      text-align: center;
+      color: var(--text-primary);
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    }
+
+    .user-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, var(--accent-color), #4361ee);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(76, 201, 240, 0.3);
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 40px rgba(76, 201, 240, 0.4);
+    }
+
+    .avatar-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .user-name:hover {
+      color: var(--accent-color);
+    }
+
+    .user-role {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
+
+    .password-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 16px 50px 16px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .password-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .password-input:focus {
+      border-color: var(--accent-color);
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 20px rgba(76, 201, 240, 0.2);
+    }
+
+    /* Windows-specific fixes for password input */
+    .password-input {
+      /* Ensure input is always interactive on Windows */
+      pointer-events: auto !important;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      /* Fix for fields sometimes entering a "stuck" state */
+      touch-action: manipulation !important;
+      /* Ensure they're visible and interactive */
+      opacity: 1 !important;
+      visibility: visible !important;
+      /* Prevent any interference */
+      z-index: 10 !important;
+      position: relative !important;
+    }
+
+    /* Fix for placeholder text sometimes preventing input on Windows */
+    .password-input::placeholder {
+      opacity: 0.7 !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      pointer-events: none !important;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 16px;
+      transition: color 0.2s ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--accent-color);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(135deg, var(--accent-color), #4361ee);
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      opacity: 0.7;
+      transform: scale(0.98);
+    }
+
+    .login-btn:hover:not(:disabled) {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 8px 25px rgba(76, 201, 240, 0.3);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .error-message {
+      color: var(--error-color);
+      font-size: 14px;
+      margin-top: 15px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .error-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .contact-developer {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      color: var(--error-color);
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .username-edit {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .username-input {
+      width: 100%;
+      padding: 12px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      text-align: center;
+    }
+
+    .username-input:focus {
+      border-color: var(--accent-color);
+    }
+
+    .loading-spinner {
+      display: none;
+      margin-right: 8px;
+    }
+
+    .switch-user {
+      margin-top: 30px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .switch-user:hover {
+      color: var(--accent-color);
+    }
+
+    /* Session timeout notification */
+    .session-timeout {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 107, 107, 0.9);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="session-timeout" id="sessionTimeout">
+    Session expired after 3 hours of inactivity
+  </div>
+
+  <div class="login-screen">
+    <div class="user-avatar" id="userAvatar">
+      <img src="../../public/assets/images/logo.png" alt="User Avatar" class="avatar-logo" onerror="this.style.display='none';">
+    </div>
+
+    <div class="user-name" id="userName">eliva-hardware</div>
+    <div class="user-role" id="userRole">Hardware Manager</div>
+
+    <div class="username-edit" id="usernameEdit">
+      <input type="text" class="username-input" id="usernameInput" placeholder="Enter username">
+    </div>
+
+    <form id="loginForm">
+      <div class="password-container">
+        <input type="password" class="password-input" id="passwordInput" placeholder="Enter password" required>
+        <button type="button" class="password-toggle" id="passwordToggle">
+          <i class="fas fa-eye"></i>
+        </button>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <i class="fas fa-spinner fa-spin loading-spinner"></i>
+        <span id="loginBtnText">Sign In</span>
+      </button>
+
+      <div class="error-message" id="errorMessage"></div>
+      <div class="contact-developer" id="contactDeveloper">
+        <strong>Too many failed attempts</strong><br>
+        Please contact developer for password reset:<br>
+        <strong>+255 784 953 866</strong>
+      </div>
+    </form>
+
+    <div class="switch-user" id="switchUser">Switch User</div>
+  </div>
+
+  <!-- Session Manager -->
+  <script src="js/session-manager.js"></script>
+  
+  <!-- Windows-specific login fix -->
+  <script src="js/win-login-fix.js"></script>
+  <!-- Emergency Windows Input Fix -->
+  <script src="js/windows-input-emergency-fix.js"></script>
+  
+  <script>
+    // Login logic
+    let failedAttempts = 0;
+    const maxAttempts = 3;
+    let currentUser = 'eliva-hardware';
+    let isEditingUsername = false;
+
+    // User accounts
+    const users = {
+      'eliva-hardware': {
+        password: 'eliva2011',
+        role: 'user',
+        name: 'Hardware Manager',
+        avatar: '../../public/assets/images/logo.png'
+      },
+      'festomanolo': {
+        password: 'festomanolo',
+        role: 'admin',
+        name: 'System Administrator',
+        avatar: '../../public/assets/images/logo.png'
+      }
+    };
+
+    // Check for session timeout
+    function checkSessionTimeout() {
+      const sessionTimeout = localStorage.getItem('sessionTimeout');
+      if (sessionTimeout === 'true') {
+        document.getElementById('sessionTimeout').style.display = 'block';
+        localStorage.removeItem('sessionTimeout');
+        setTimeout(() => {
+          document.getElementById('sessionTimeout').style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    // Initialize page
+    function initializePage() {
+      checkSessionTimeout();
+      updateUserDisplay();
+      
+      // Ensure password input field is properly reset and functional
+      resetPasswordInput();
+      
+      document.getElementById('passwordInput').focus();
+    }
+
+    // Reset password input field to ensure it's functional after logout
+    function resetPasswordInput() {
+      // Use Windows fix if available, otherwise use basic reset
+      if (window.WinLoginFix && window.WinLoginFix.fixPasswordInput) {
+        window.WinLoginFix.fixPasswordInput();
+        return;
+      }
+      
+      const passwordInput = document.getElementById('passwordInput');
+      if (passwordInput) {
+        // Clear any existing value
+        passwordInput.value = '';
+        
+        // Ensure the input is enabled and functional
+        passwordInput.disabled = false;
+        passwordInput.readOnly = false;
+        passwordInput.removeAttribute('disabled');
+        passwordInput.removeAttribute('readonly');
+        
+        // Force remove any event listeners that might interfere
+        passwordInput.onkeydown = null;
+        passwordInput.onkeyup = null;
+        passwordInput.onkeypress = null;
+        passwordInput.oninput = null;
+        passwordInput.onchange = null;
+        
+        // Ensure proper styling and interaction
+        passwordInput.style.pointerEvents = 'auto';
+        passwordInput.style.userSelect = 'text';
+        passwordInput.style.webkitUserSelect = 'text';
+        passwordInput.style.mozUserSelect = 'text';
+        passwordInput.style.msUserSelect = 'text';
+        passwordInput.style.opacity = '1';
+        passwordInput.style.visibility = 'visible';
+        passwordInput.style.touchAction = 'manipulation';
+        
+        console.log('Password input field reset and ready for input');
+      }
+    }
+
+    // Update user display
+    function updateUserDisplay() {
+      const user = users[currentUser];
+      if (user) {
+        // Display "admin" instead of "festomanolo" for better UX
+        const displayName = currentUser === 'festomanolo' ? 'admin' : currentUser;
+        document.getElementById('userName').textContent = displayName;
+        document.getElementById('userRole').textContent = user.name;
+      }
+    }
+
+    // Password toggle functionality
+    document.getElementById('passwordToggle').addEventListener('click', function() {
+      const passwordInput = document.getElementById('passwordInput');
+      const icon = this.querySelector('i');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        passwordInput.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    });
+
+    // Username click to edit
+    document.getElementById('userName').addEventListener('click', function() {
+      if (!isEditingUsername) {
+        isEditingUsername = true;
+        const usernameEdit = document.getElementById('usernameEdit');
+        const usernameInput = document.getElementById('usernameInput');
+        
+        usernameEdit.style.display = 'block';
+        // Show "admin" instead of "festomanolo" in edit mode
+        const displayValue = currentUser === 'festomanolo' ? 'admin' : currentUser;
+        usernameInput.value = displayValue;
+        usernameInput.focus();
+        usernameInput.select();
+      }
+    });
+
+    // Username input handling
+    document.getElementById('usernameInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const newUsername = this.value.trim();
+        // Allow "admin" as alias for "festomanolo"
+        if (newUsername === 'admin') {
+          currentUser = 'festomanolo';
+          updateUserDisplay();
+        } else if (users[newUsername]) {
+          currentUser = newUsername;
+          updateUserDisplay();
+        }
+        isEditingUsername = false;
+        document.getElementById('usernameEdit').style.display = 'none';
+        document.getElementById('passwordInput').focus();
+      } else if (e.key === 'Escape') {
+        isEditingUsername = false;
+        document.getElementById('usernameEdit').style.display = 'none';
+        document.getElementById('passwordInput').focus();
+      }
+    });
+
+    // Switch user functionality
+    document.getElementById('switchUser').addEventListener('click', function() {
+      // Toggle between eliva-hardware and festomanolo (displayed as admin)
+      if (currentUser === 'eliva-hardware') {
+        currentUser = 'festomanolo';
+      } else {
+        currentUser = 'eliva-hardware';
+      }
+      updateUserDisplay();
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+    });
+
+    // Login form submission
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const password = document.getElementById('passwordInput').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const loginBtnText = document.getElementById('loginBtnText');
+      const errorMessage = document.getElementById('errorMessage');
+      const contactDeveloper = document.getElementById('contactDeveloper');
+      const loadingSpinner = document.querySelector('.loading-spinner');
+      const passwordContainer = document.querySelector('.password-container');
+
+      // Show loading state
+      loginBtn.disabled = true;
+      loadingSpinner.style.display = 'inline-block';
+      loginBtnText.textContent = 'Signing In...';
+      errorMessage.classList.remove('show');
+      contactDeveloper.style.display = 'none';
+
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Check credentials using SessionManager
+      const user = users[currentUser];
+      const userPassword = window.SessionManager.getUserPassword(currentUser);
+      
+      if (user && userPassword === password) {
+        // Successful login
+        console.log('Login successful for:', currentUser);
+        
+        // Store user session using SessionManager
+        const sessionData = {
+          username: currentUser,
+          role: user.role,
+          name: user.name
+        };
+
+        // Set session and ensure it's properly stored
+        const sessionSet = window.SessionManager.setSession(sessionData);
+        console.log('Session set successfully:', sessionSet);
+        
+        // Also store in localStorage as backup with multiple keys
+        localStorage.setItem('userSession', JSON.stringify(sessionData));
+        localStorage.setItem('eliva_session', JSON.stringify({
+          username: currentUser,
+          loggedIn: true,
+          loginTime: new Date().toISOString(),
+          sessionId: 'session-' + Date.now(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        }));
+        
+        // Verify session was stored correctly
+        const verifySession = localStorage.getItem('userSession');
+        console.log('Session verification:', verifySession ? 'SUCCESS' : 'FAILED');
+        if (verifySession) {
+          const parsedSession = JSON.parse(verifySession);
+          console.log('Stored session data:', parsedSession);
+        }
+        
+        // Reset failed attempts
+        failedAttempts = 0;
+        
+        // Success animation
+        loginBtnText.textContent = 'Success!';
+        loginBtn.style.background = 'linear-gradient(135deg, #51cf66, #40c057)';
+        
+        // Redirect to dashboard with a longer delay to ensure session is set
+        setTimeout(() => {
+          console.log('Redirecting to dashboard...');
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        // Failed login - shake animation
+        passwordContainer.classList.add('shake');
+        setTimeout(() => passwordContainer.classList.remove('shake'), 500);
+        
+        failedAttempts++;
+        console.log('Login failed. Attempts:', failedAttempts);
+
+        if (failedAttempts >= maxAttempts) {
+          // Show contact developer message
+          contactDeveloper.style.display = 'block';
+          
+          // Disable login for 5 minutes
+          loginBtn.disabled = true;
+          setTimeout(() => {
+            loginBtn.disabled = false;
+            failedAttempts = 0;
+            contactDeveloper.style.display = 'none';
+          }, 300000); // 5 minutes
+        } else {
+          // Show error message
+          const remainingAttempts = maxAttempts - failedAttempts;
+          errorMessage.textContent = `Incorrect password. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`;
+          errorMessage.classList.add('show');
+        }
+
+        // Clear password field
+        document.getElementById('passwordInput').value = '';
+      }
+
+      // Reset loading state
+      if (failedAttempts < maxAttempts) {
+        loginBtn.disabled = false;
+      }
+      loadingSpinner.style.display = 'none';
+      loginBtnText.textContent = 'Sign In';
+      loginBtn.style.background = 'linear-gradient(135deg, var(--accent-color), #4361ee)';
+    });
+
+    // Auto-focus password field
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize SessionManager but don't set up activity tracking on login page
+      if (window.SessionManager) {
+        // Only initialize basic functionality, skip activity tracking
+        window.SessionManager.init();
+        // Ensure no activity tracking is set up on login page
+        if (window.SessionManager.clearSessionTracking) {
+          window.SessionManager.clearSessionTracking();
+        }
+      }
+      
+      initializePage();
+    });
+
+    // Enter key handling
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !isEditingUsername) {
+        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+      }
+    });
+  </script>
+</body>
+</html>

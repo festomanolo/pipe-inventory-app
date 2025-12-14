@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Login System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    .info { color: #17a2b8; }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #0056b3; }
+    input {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Eliva Hardware Login System Test</h1>
+  
+  <div class="test-section">
+    <h2>✅ Features Implemented:</h2>
+    <ul>
+      <li class="success">✓ macOS-style login page with glassmorphism effects</li>
+      <li class="success">✓ Two user accounts: eliva-hardware/eliva2011 (User) and festomanolo/festomanolo (Admin)</li>
+      <li class="success">✓ 3 failed attempts limit with developer contact message</li>
+      <li class="success">✓ 5-minute lockout after max attempts</li>
+      <li class="success">✓ Password change functionality for regular users</li>
+      <li class="success">✓ Admin password cannot be changed</li>
+      <li class="success">✓ Eliva logo added to dashboard header and sidebar</li>
+      <li class="success">✓ Logout button in dashboard sidebar</li>
+      <li class="success">✓ Session management with localStorage/electronAPI</li>
+      <li class="success">✓ Role-based UI updates</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>🧪 Test Login Credentials:</h2>
+    <div class="info">
+      <strong>Regular User:</strong><br>
+      Username: eliva-hardware<br>
+      Password: eliva2011<br>
+      <em>Can change password in Settings → Password tab</em>
+    </div>
+    <br>
+    <div class="info">
+      <strong>Admin User:</strong><br>
+      Username: festomanolo<br>
+      Password: festomanolo<br>
+      <em>Cannot change password (admin restriction)</em>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🚀 How to Test:</h2>
+    <ol>
+      <li>Open <code>src/renderer/login.html</code> in your browser</li>
+      <li>Try logging in with correct credentials</li>
+      <li>Try logging in with wrong credentials 3 times to see the developer contact message</li>
+      <li>After successful login, go to Settings → Password tab (only visible for regular users)</li>
+      <li>Try changing the password</li>
+      <li>Logout and login again with the new password</li>
+      <li>Test the logout functionality</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>📱 Developer Contact:</h2>
+    <div class="info">
+      After 3 failed login attempts, users will see:<br>
+      <strong>+255 784 953 866</strong>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🔧 Quick Actions:</h2>
+    <button onclick="openLogin()">Open Login Page</button>
+    <button onclick="openDashboard()">Open Dashboard</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    <button onclick="testPasswordStorage()">Test Password Storage</button>
+  </div>
+
+  <div id="output" class="test-section" style="display: none;">
+    <h3>Output:</h3>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function openLogin() {
+      window.open('src/renderer/login.html', '_blank');
+    }
+
+    function openDashboard() {
+      window.open('src/renderer/dashboard.html', '_blank');
+    }
+
+    function clearStorage() {
+      localStorage.clear();
+      showResult('✅ Local storage cleared!', 'success');
+    }
+
+    function testPasswordStorage() {
+      // Test storing a password for eliva-hardware
+      localStorage.setItem('eliva-hardware-password', 'newpassword123');
+      const stored = localStorage.getItem('eliva-hardware-password');
+      showResult(`✅ Password storage test: ${stored}`, 'success');
+    }
+
+    function showResult(message, type) {
+      const output = document.getElementById('output');
+      const result = document.getElementById('result');
+      result.innerHTML = `<div class="${type}">${message}</div>`;
+      output.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

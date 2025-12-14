@@ -1,0 +1,157 @@
+/* 
+ * Windows-specific fixes for input field issues
+ * This stylesheet addresses Windows-specific input field problems
+ * including placeholder issues and fields becoming uneditable
+ */
+
+/* Fix for input fields becoming uneditable */
+input, textarea, select {
+  /* Ensure input fields always allow user input */
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  /* Fix for fields sometimes entering a "stuck" state */
+  touch-action: manipulation !important;
+  /* Ensure they're visible and interactive */
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for placeholder text sometimes preventing input */
+::placeholder,
+::-webkit-input-placeholder {
+  opacity: 0.7 !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: none !important;
+}
+
+/* Ensure proper focus behavior on Windows */
+input:focus, textarea:focus, select:focus {
+  /* Make focused inputs stand out better on Windows */
+  outline: 2px solid rgba(0, 123, 255, 0.5) !important;
+  outline-offset: 1px !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* Prevent background elements from interfering with input */
+.form-control, 
+.form-select,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+textarea {
+  /* Improve input rendering */
+  background-clip: padding-box !important;
+  /* Prevent z-index issues with other elements */
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Fix for form floating labels sometimes blocking input in Windows */
+.form-floating > label {
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* Prevent any element with position:absolute from blocking inputs */
+[style*="position: absolute"],
+[style*="position:absolute"] {
+  pointer-events: none !important;
+}
+
+/* But allow clicking buttons and links that have position:absolute */
+button[style*="position: absolute"],
+button[style*="position:absolute"],
+a[style*="position: absolute"],
+a[style*="position:absolute"],
+.btn[style*="position: absolute"],
+.btn[style*="position:absolute"] {
+  pointer-events: auto !important;
+}
+
+/* Fix for click events sometimes not registering on input fields */
+.form-group, .input-group, .form-floating {
+  z-index: auto !important;
+}
+
+/* Fix for input overlays sometimes stealing focus/keyboard events */
+.form-control-overlay,
+.input-group-text,
+.input-group-append,
+.input-group-prepend {
+  pointer-events: none !important;
+}
+
+/* Allow clicking on input group buttons specifically */
+.input-group-text button,
+.input-group-append button,
+.input-group-prepend button,
+.input-group .btn {
+  pointer-events: auto !important;
+}
+
+/* Fix for modal inputs becoming uneditable */
+.modal-body input,
+.modal-body textarea,
+.modal-body select {
+  z-index: 1050 !important;
+}
+
+/* Fix for number input arrows sometimes being inaccessible */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Additional fixes for login page password input */
+.password-input {
+  /* Ensure password input is always interactive on Windows */
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  /* Fix for fields sometimes entering a "stuck" state */
+  touch-action: manipulation !important;
+  /* Ensure they're visible and interactive */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* Prevent any interference */
+  z-index: 10 !important;
+  position: relative !important;
+  /* Force enable input */
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Fix for login page password container */
+.password-container {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Fix for password toggle button */
+.password-toggle {
+  pointer-events: auto !important;
+  z-index: 11 !important;
+  position: absolute !important;
+}
+
+/* Fix for login form */
+#loginForm {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Fix for login screen */
+.login-screen {
+  position: relative !important;
+  z-index: 1 !important;
+} 

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliva Hardware - Reports</title>
+  <!-- Bootstrap CSS -->
+  <link href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/font.css">
+  <link rel="stylesheet" href="../../public/assets/css/style.css">
+  <link rel="stylesheet" href="../../public/assets/css/animations.css">
+  <style>
+    /* macOS-like Theme for Reports Page */
+    :root {
+      --primary-color: #3b82f6;
+      --primary-light: #93c5fd;
+      --primary-dark: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #3b82f6;
+      --gray-dark: #1f2937;
+      --gray-medium: #4b5563;
+      --gray-light: #d1d5db;
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      --card-shadow-hover: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      --sidebar-width: 240px;
+      --bg-dark: #1c1c1e;
+      --bg-medium: #2c2c2e;
+      --bg-light: #3c3c3e;
+      --text-primary: #ffffff;
+      --text-secondary: #aeaeb2;
+      --border-color: #38383a;
+      --card-radius: 16px;
+      --button-radius: 10px;
+      --input-radius: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    .card {
+      border-radius: 12px;
+      border: none;
+    }
+    
+    /* Settings Modal Styles */
+    .profile-card {
+      background: var(--bg-medium);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    .profile-header {
+      margin-bottom: 2rem;
+    }
+    
+    .profile-img-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--primary-color);
+    }
+    
+    .profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .profile-name {
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .profile-title, .profile-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+    
+    .contact-cards {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .contact-card {
+      background: var(--bg-light);
+      border-radius: var(--button-radius);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.2s ease;
+    }
+    
+    .contact-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    
+    .whatsapp-card .card-icon {
+      background: #25d366;
+      color: white;
+    }
+    
+    .github-card .card-icon {
+      background: #333;
+      color: white;
+    }
+    
+    .website-card .card-icon {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .card-content h6 {
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    
+    .card-content a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    
+    .card-content a:hover {
+      color: var(--primary-color);
+    }
+    
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    
+    .tech-badge {
+      background: var(--primary-color);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .copyright {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    
+    .password-change-container {
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition-smooth);
+    }
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .card-header {
+      border-bottom: none;
+      background: rgba(59, 130, 246, 0.05);
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      border-radius: 12px 12px 0 0 !important;
+    }
+    .card-header i {
+      color: var(--primary-color);
+    }
+    .btn {
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      border: none;
+      box-shadow: 0 3px 5px -1px rgba(59, 130, 246, 0.25);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.35);
+    }
+    .btn-outline-primary {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .btn-outline-primary:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .table {
+      border-radius: 8px;
+      overflow: hidden;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .table thead th {
+      background-color: var(--primary-color) !important;
+      color: white !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      font-size: 0.85rem !important;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    .table tbody tr {
+      transition: var(--transition-smooth);
+    }
+    .table tbody tr:hover {
+      background-color: rgba(59, 130, 246, 0.08);
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 10px 15px;
+      border: 1px solid var(--gray-light);
+      transition: var(--transition-smooth);
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+    }
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+    .input-group-text {
+      border-radius: 8px 0 0 8px;
+      background-color: rgba(59, 130, 246, 0.1);
+      border-color: var(--gray-light);
+      color: var(--primary-color);
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: linear-gradient(135deg, #182237 0%, #22304a 100%);
+      border-right: 1px solid var(--border-color);
+      padding: 20px 0;
+      z-index: 1000;
+      transition: transform var(--transition-speed);
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+      background: none;
+    }
+    .sidebar-header img {
+      width: 32px;
+      height: 32px;
+      margin-right: 10px;
+      border-radius: 6px;
+    }
+    .sidebar-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar-nav li {
+      margin-bottom: 5px;
+    }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+      border-radius: 8px;
+      margin: 0 10px;
+      background: none;
+    }
+    .sidebar-nav a:hover {
+      background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+    }
+    .sidebar-nav a.active {
+      background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.12);
+    }
+    .sidebar-nav i {
+      width: 20px;
+      margin-right: 10px;
+      text-align: center;
+    }
+    .alert-badge {
+      background-color: var(--success-color);
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: auto;
+    }
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 30px;
+      min-height: 100vh;
+    }
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .content-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
+    .content-header h1 i {
+      margin-right: 12px;
+      color: var(--primary-color);
+    }
+    .footer {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 40px;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Stat Cards */
+    .stat-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 1.5rem 1.2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .stat-card .icon {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 3rem;
+      opacity: 0.12;
+      color: white;
+    }
+    .stat-card.accent {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+    }
+    .stat-card h3 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .stat-card p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    /* Animations for new sale button */
+    @keyframes buttonPulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .pulse-button {
+      animation: buttonPulse 2s infinite;
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .toggle-sidebar {
+        display: block;
+      }
+    }
+    .toggle-sidebar {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background-color: var(--bg-medium);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    /* Remove persistent dark color from links */
+    .sidebar-nav a:not(.active):not(:hover) {
+      background: none !important;
+      color: var(--text-secondary) !important;
+      box-shadow: none !important;
+    }
+    .text-white, .card-title, .form-label, .sidebar-header h3, .content-header h1, .sidebar-nav a, .sidebar-nav a.active, .sidebar-nav a:hover, .table th, .table td, .form-select, .form-control, .badge, .stat-card h3, .stat-card p, .stat-label, .stat-highlight, .footer, .input-group-text {
+      color: #fff !important;
+    }
+    .form-select, .form-control {
+      background-color: var(--bg-light);
+      color: #fff !important;
+    }
+    .card-title, .card-body h5, .card-body h6 {
+      color: #fff !important;
+    }
+    .report-card, .report-card * {
+      color: #fff !important;
+    }
+    #search-reports, #search-reports::placeholder {
+      color: #fff !important;
+      background-color: var(--bg-light);
+    }
+    .badge {
+      background: #3b82f6;
+      color: #fff !important;
+    }
+    .table th, .table td {
+      color: #fff !important;
+    }
+    .form-label {
+      color: #fff !important;
+    }
+    .input-group-text {
+      color: #fff !important;
+      background: var(--bg-light);
+    }
+  </style>
+</head><body>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-white mt-3">Generating report...</p>
+  </div>
+
+  <!-- Mobile Toggle Button -->
+  <button class="toggle-sidebar" id="toggleSidebar">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <img src="../../public/assets/images/logo.png" id="sales-sidebar-logo" alt="Eliva Hardware Logo" style="width: 50px; height: auto; margin-right: 10px;" onerror="this.style.display='none';">
+      <h3>Eliva Hardware</h3>
+    </div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="dashboard.html">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="inventory.html">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+          <span class="alert-badge" id="alert-count">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="sales.html">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Sales</span>
+        </a>
+      </li>
+      <li>
+        <a href="customers.html">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+      </li>
+      <li>
+        <a href="reports.html" class="active">
+          <i class="fas fa-file-alt"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li>
+        <a href="analytics.html">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" id="logout-link">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Toast container for notifications -->
+  <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-header">
+      <h1><i class="fas fa-chart-bar"></i> Reports</h1>
+      <div><span id="current-date" class="text-secondary"></span></div>
+    </div>
+    
+    <!-- Report Generator -->
+    <div class="card dark-card mb-4 fade-in">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Generate Report</h5>
+        <form id="report-generator-form" class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label for="report-type" class="form-label">Report Type</label>
+            <select class="form-select" id="report-type" required>
+              <option value="">Select Type</option>
+              <option value="inventory">Inventory</option>
+              <option value="sales">Sales</option>
+              <option value="profit">Profit & Loss</option>
+              <option value="customer">Customer Analysis</option>
+              <option value="supplier">Supplier Analysis</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="report-period" class="form-label">Time Period</label>
+            <select class="form-select" id="report-period">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="this_week">This Week</option>
+              <option value="last_week">Last Week</option>
+              <option value="this_month" selected>This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="this_year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="report-format" class="form-label">Output Format</label>
+            <select class="form-select" id="report-format">
+              <option value="screen">View on Screen</option>
+              <option value="pdf">Export as PDF</option>
+              <option value="csv">Export as CSV</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary" id="generate-report-btn">
+              <i class="fas fa-chart-bar me-2"></i>Generate Report
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Recent Reports -->
+    <div class="card dark-card mb-4 fade-in">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title">Recent Reports</h5>
+          <div class="input-group" style="max-width: 300px;">
+            <input type="text" class="form-control" placeholder="Search reports..." id="search-reports">
+            <button class="btn btn-outline-secondary" type="button" id="search-reports-btn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div id="reports-list" class="row g-3">
+          <!-- Reports will be loaded here dynamically -->
+          <div class="text-center py-5" id="reports-loading">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading reports...</p>
+          </div>
+          <div class="text-center py-5" id="no-reports-found" style="display: none;">
+            <i class="fas fa-chart-bar fa-3x mb-3" style="color: var(--text-secondary);"></i>
+            <p>No reports found. Generate your first report using the form above.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Current Report View -->
+    <div class="card dark-card mb-4 fade-in" id="current-report-container" style="display: none;">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title" id="current-report-title">Report Details</h5>
+          <div class="report-actions">
+            <button class="btn btn-outline-primary btn-sm me-2" id="print-report-btn">
+              <i class="fas fa-print me-1"></i>Print
+            </button>
+            <button class="btn btn-outline-success btn-sm me-2" id="export-pdf-btn">
+              <i class="fas fa-file-pdf me-1"></i>PDF
+            </button>
+            <button class="btn btn-outline-info btn-sm me-2" id="export-csv-btn">
+              <i class="fas fa-file-csv me-1"></i>CSV
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="close-report-btn">
+              <i class="fas fa-times me-1"></i>Close
+            </button>
+          </div>
+        </div>
+        <div id="report-content">
+          <div class="row mb-4" id="report-metrics"></div>
+          <div class="row mb-4">
+            <div class="col-12">
+              <div id="report-charts-container" class="chart-container"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="card dark-card">
+                <div class="card-body">
+                  <h6 class="card-title mb-3">Detailed Data</h6>
+                  <div class="table-responsive">
+                    <table class="table table-dark table-hover" id="report-data-table"></table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">&copy; 2024 Pipe Inventory. All rights reserved.</div>
+  </div>
+
+  <!-- Required JavaScript Libraries -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  
+  <!-- Chart.js for report visualizations -->
+  <script src="../../node_modules/chart.js/dist/chart.umd.js"></script>
+  
+  <!-- AOS - Animate On Scroll Library -->
+  <script src="../../node_modules/aos/dist/aos.js"></script>
+  
+  <!-- Windows Input Field Fix -->
+  <script src="js/win-login-fix.js"></script>
+  
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="settingsModalLabel">
+              <i class="fas fa-cog me-2"></i> Settings
+          </h5>
+          <button type="button" class="btn-close btn-close-red" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="false">Dashboard</button>
+              </li>
+              <li class="nav-item" role="presentation" id="password-tab-item">
+                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Password</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab" aria-controls="about" aria-selected="false">About</button>
+              </li>
+            </ul>
+            
+            <!-- Tab content -->
+            <div class="tab-content">
+              <!-- General Settings -->
+              <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                <form id="general-settings-form">
+            <div class="mb-3">
+              <label for="company-name" class="form-label">Company Name</label>
+                    <input type="text" class="form-control" id="company-name" placeholder="Enter company name">
+            </div>
+            <div class="mb-3">
+                    <label for="alert-threshold" class="form-label">Default Alert Threshold</label>
+                    <input type="number" class="form-control" id="alert-threshold" min="1" value="10">
+              <small class="form-text text-secondary">Items with quantity below this value will trigger alerts</small>
+            </div>
+            <div class="mb-3">
+              <label for="currency" class="form-label">Currency</label>
+              <select class="form-select" id="currency">
+                <option value="USD">US Dollar ($)</option>
+                <option value="EUR">Euro (€)</option>
+                <option value="GBP">British Pound (£)</option>
+                      <option value="TZS">Tanzanian Shilling (TZsh)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="session-timeout" class="form-label">Session Timeout (Hours)</label>
+              <input type="number" class="form-control" id="session-timeout" min="1" max="24" value="3">
+              <small class="form-text text-secondary">Application will automatically logout after this period of inactivity</small>
+            </div>
+          </form>
+              </div>
+              
+              <!-- Dashboard Link -->
+              <div class="tab-pane fade" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                <div class="text-center py-5">
+                  <h4 class="mb-4">Dashboard</h4>
+                  <p class="text-secondary mb-4">Access your main dashboard with overview and analytics.</p>
+                  <a href="dashboard.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                  </a>
+                </div>
+              </div>
+              
+              <!-- About Section -->
+              <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+                <div class="profile-card">
+                  <div class="profile-header">
+                    <div class="profile-img-container">
+                      <img src="../../public/assets/images/festomanolo.png" alt="Profile" class="profile-img">
+                    </div>
+                    <div class="profile-info">
+                      <h3 class="profile-name">Festomanolo</h3>
+                      <p class="profile-title">Software Developer & Designer</p>
+                      <p class="profile-subtitle">Pipe Inventory Management System</p>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-cards">
+                    <div class="contact-card whatsapp-card">
+                      <div class="card-icon">
+                        <i class="fab fa-whatsapp"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>WhatsApp</h6>
+                        <a href="https://wa.me/255784953866" target="_blank">+255 784 953 866</a>
+                      </div>
+                    </div>
+                    
+                    <div class="contact-card github-card">
+                      <div class="card-icon">
+                        <i class="fab fa-github"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>GitHub</h6>
+                        <a href="https://github.com/festomanolo" target="_blank">@festomanolo</a>
+                      </div>
+                    </div>
+                    
+                    <div class="contact-card website-card">
+                      <div class="card-icon">
+                        <i class="fas fa-globe"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>Website</h6>
+                        <a href="https://festomanolo.xyz" target="_blank">festomanolo.xyz</a>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="about-footer">
+                    <div class="tech-stack">
+                      <span class="tech-badge">Node.js</span>
+                      <span class="tech-badge">Electron</span>
+                      <span class="tech-badge">JavaScript</span>
+                      <span class="tech-badge">HTML/CSS</span>
+                    </div>
+                    <p class="copyright"> 2024 Festomanolo. All rights reserved.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Password Change Section -->
+              <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                <div class="password-change-container">
+                  <h5 class="mb-4">
+                    <i class="fas fa-key me-2"></i>Change Password
+                  </h5>
+                  <form id="password-change-form">
+                    <div class="mb-3">
+                      <label for="current-password" class="form-label">Current Password</label>
+                      <input type="password" class="form-control" id="current-password" placeholder="Enter current password" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="new-password" class="form-label">New Password</label>
+                      <input type="password" class="form-control" id="new-password" placeholder="Enter new password" required minlength="6">
+                      <small class="form-text text-secondary">Password must be at least 6 characters long</small>
+                    </div>
+                    <div class="mb-3">
+                      <label for="confirm-password" class="form-label">Confirm New Password</label>
+                      <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password" required>
+                    </div>
+                    <div class="d-grid">
+                      <button type="submit" class="btn btn-primary" id="change-password-btn">
+                        <i class="fas fa-save me-2"></i>Change Password
+                      </button>
+                    </div>
+                  </form>
+                  <div class="alert alert-success mt-3" id="password-success" style="display: none;">
+                    <i class="fas fa-check-circle me-2"></i>Password changed successfully!
+                  </div>
+                  <div class="alert alert-danger mt-3" id="password-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle me-2"></i><span id="password-error-text"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-settings">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom JavaScript -->
+  <script src="js/reports.js"></script>
+  <!-- Windows Input Fix -->
+  <script src="js/win-login-fix.js"></script>
+  <!-- Emergency Windows Input Fix -->
+  <script src="js/windows-input-emergency-fix.js"></script>
+</body>
+</html>

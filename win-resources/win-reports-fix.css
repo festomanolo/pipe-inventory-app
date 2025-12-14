@@ -1,0 +1,42 @@
+
+/**
+ * Windows Reports Page Fixes
+ * This CSS ensures that charts and graphs render correctly on Windows
+ */
+
+/* Chart container visibility */
+.chart-container {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5) !important;
+  filter: brightness(1.5) contrast(1.5) !important;
+}
+
+/* Chart canvas elements */
+canvas.report-chart {
+  filter: brightness(1.5) contrast(1.5) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Chart.js elements */
+.chartjs-render-monitor {
+  filter: brightness(1.5) contrast(1.5) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Chart labels and legends */
+.chart-title, .legend-item {
+  color: white !important;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8) !important;
+  font-weight: bold !important;
+}
+
+/* Force all report text to be visible */
+#reports-container *,
+#report-metrics *,
+.report-card * {
+  color: white !important;
+  visibility: visible !important;
+}

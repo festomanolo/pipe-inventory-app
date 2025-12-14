@@ -1,0 +1,44 @@
+@theme {
+  @keyframes logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@utility app-root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+@utility app-logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+  &:hover {
+    filter: drop-shadow(0 0 2em rgba(100, 108, 255, 0.67));
+  }
+  &.react:hover {
+    filter: drop-shadow(0 0 2em rgba(97, 218, 251, 0.67));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+@utility app-card {
+  padding: 2em;
+}
+
+@utility app-read-the-docs {
+  color: #888;
+}

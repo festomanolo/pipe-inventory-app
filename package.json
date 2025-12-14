@@ -1,0 +1,200 @@
+{
+  "name": "pipe-inventory-app",
+  "version": "1.4.0",
+  "description": "Inventory Management System for Pipe Products",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development electron .",
+    "dev": "cross-env NODE_ENV=development electron .",
+    "setup": "node build-setup.js",
+    "build-helper": "node build-helper.js",
+    "build": "npm run setup && electron-builder",
+    "build:win": "node win-build.js",
+    "build:win-auto": "node auto-build-windows.js",
+    "build:win-portable": "node build-windows-portable.js",
+    "build:mac": "npm run setup && electron-builder --mac",
+    "build:linux": "npm run setup && electron-builder --linux",
+    "build:all": "npm run setup && electron-builder -mwl",
+    "postinstall": "electron-builder install-app-deps",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "win-build": "node win-build.js"
+  },
+  "keywords": [
+    "inventory",
+    "hardware",
+    "sales",
+    "electron",
+    "desktop"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^25.9.8",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9",
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.32.6",
+    "svg2png": "^4.1.1"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.11",
+    "@popperjs/core": "^2.11.8",
+    "@supabase/supabase-js": "^2.49.4",
+    "aos": "^2.3.4",
+    "bootstrap": "^5.3.1",
+    "chart.js": "^4.3.3",
+    "electron-is-packaged": "^1.0.2",
+    "electron-log": "^4.4.8",
+    "electron-store": "^8.1.0",
+    "jquery": "^3.7.1",
+    "moment": "^2.29.4",
+    "pdfkit": "^0.13.0",
+    "recharts": "^2.15.3",
+    "sqlite3": "^5.0.0",
+    "uuid": "^9.0.1"
+  },
+  "build": {
+    "appId": "com.pipe-inventory-app.app",
+    "productName": "Pipe Inventory",
+    "copyright": "Copyright 2025 Pipe Inventory",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "node_modules/",
+      "src/",
+      "package.json",
+      "public/",
+      "build/"
+    ],
+    "extraResources": [
+      {
+        "from": "public/assets/images/logo.png",
+        "to": "logo.png"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/*.{node,dll,exe}",
+      "**/node_modules/sqlite3/**/*"
+    ],
+    "publish": null,
+    "mac": {
+      "category": "public.app.category.business",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "public/assets/images/logo.png",
+          "to": "logo.png"
+        }
+      ]
+    },
+    "dmg": {
+      "background": "build/background.png",
+      "icon": "build/icons/icon.icns",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "title": "${productName} ${version}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icons/icon.ico",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "publisherName": "Eliva Hardware",
+      "verifyUpdateCodeSignature": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pipe Inventory",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "uninstallDisplayName": "${productName}",
+      "license": "build/license.txt"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "snap"
+      ],
+      "category": "Office",
+      "desktop": {
+        "entry": {
+          "Name": "Pipe Inventory",
+          "Comment": "Inventory Management System for Pipe Products",
+          "Categories": "Office;Utility;",
+          "StartupWMClass": "pipe-inventory-app"
+        }
+      },
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "appImage": {
+      "license": "build/license.txt",
+      "synopsis": "Inventory Management System for Hardware Products"
+    },
+    "deb": {
+      "packageCategory": "office",
+      "depends": []
+    },
+    "snap": {
+      "confinement": "strict",
+      "grade": "stable",
+      "summary": "Inventory Management System for Hardware Products"
+    },
+    "fileAssociations": [
+      {
+        "ext": "pib",
+        "name": "Pipe Inventory Backup",
+        "description": "Pipe Inventory Backup File",
+        "mimeType": "application/x-pipe-inventory-backup"
+      }
+    ],
+    "protocols": [
+      {
+        "name": "Pipe Inventory URL",
+        "schemes": [
+          "pipeinv"
+        ]
+      }
+    ]
+  }
+}

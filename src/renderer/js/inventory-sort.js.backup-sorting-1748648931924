@@ -1,0 +1,497 @@
+/**
+ * Inventory Sorting System
+ * Provides sorting functionality for the inventory table
+ */
+
+// Global variable to track current sort state
+let currentSort = {
+  column: null,
+  direction: 'asc' // 'asc' or 'desc'
+};
+
+// Initialize sorting system
+function initInventorySorting() {
+  console.log('Initializing inventory sorting system');
+  
+  // Set up sorting styles
+  addSortStyles();
+  
+  // Add stock status styles
+  addStockStatusStyles();
+  
+  // Set up header click events for sorting
+  setupHeaderSorting();
+  
+  // Set up dropdown sorting
+  setupDropdownSorting();
+}
+
+// Add event listeners to sortable headers
+function setupHeaderSorting() {
+  const headers = document.querySelectorAll('th.sort-header');
+  
+  headers.forEach(header => {
+    header.style.cursor = 'pointer';
+    
+    header.addEventListener('click', () => {
+      const sortColumn = header.getAttribute('data-sort');
+      if (!sortColumn) return;
+      
+      // Toggle direction if same column clicked
+      if (currentSort.column === sortColumn) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.column = sortColumn;
+        currentSort.direction = 'asc';
+      }
+      
+      // Update UI indicators
+      updateSortIndicators(header);
+      
+      // Perform the sort
+      sortInventoryData(sortColumn, currentSort.direction);
+    });
+  });
+}
+
+// Set up dropdown sorting
+function setupDropdownSorting() {
+  const sortSelect = document.getElementById('sort-options');
+  if (!sortSelect) return;
+  
+  sortSelect.addEventListener('change', function() {
+    const value = this.value;
+    if (!value) return;
+    
+    const [column, direction] = value.split(':');
+    currentSort.column = column;
+    currentSort.direction = direction;
+    
+    // Update header indicators to match dropdown selection
+    updateSortIndicatorsFromDropdown(column, direction);
+    
+    // Perform the sort
+    sortInventoryData(column, direction);
+  });
+}
+
+// Update sort indicators in table headers
+function updateSortIndicators(activeHeader) {
+  // Clear all indicators first
+  document.querySelectorAll('th.sort-header i.fas').forEach(icon => {
+    icon.className = 'fas fa-sort';
+  });
+  
+  // Set the active indicator
+  const sortIcon = activeHeader.querySelector('i.fas');
+  if (sortIcon) {
+    sortIcon.className = `fas fa-sort-${currentSort.direction === 'asc' ? 'up' : 'down'}`;
+  }
+  
+  // Also update the dropdown if it exists
+  const sortSelect = document.getElementById('sort-options');
+  if (sortSelect) {
+    const dropdownValue = `${currentSort.column}:${currentSort.direction}`;
+    const option = Array.from(sortSelect.options).find(opt => opt.value === dropdownValue);
+    
+    if (option) {
+      sortSelect.value = dropdownValue;
+    } else {
+      sortSelect.value = '';
+    }
+  }
+}
+
+// Update header indicators based on dropdown selection
+function updateSortIndicatorsFromDropdown(column, direction) {
+  // Clear all indicators first
+  document.querySelectorAll('th.sort-header i.fas').forEach(icon => {
+    icon.className = 'fas fa-sort';
+  });
+  
+  // Find the matching header and update its icon
+  const header = document.querySelector(`th[data-sort="${column}"]`);
+  if (header) {
+    const sortIcon = header.querySelector('i.fas');
+    if (sortIcon) {
+      sortIcon.className = `fas fa-sort-${direction === 'asc' ? 'up' : 'down'}`;
+    }
+  }
+}
+
+// Sort the inventory data
+function sortInventoryData(column, direction) {
+  // Get inventory data - either from the global window variables or local variables
+  let data = [];
+  
+  console.log('Checking available inventory data sources');
+  
+  // Try to get data from global window variables first (most reliable source)
+  if (typeof window.filteredInventory !== 'undefined' && window.filteredInventory.length > 0) {
+    console.log('Using window.filteredInventory with', window.filteredInventory.length, 'items');
+    data = [...window.filteredInventory];
+  } 
+  // Or fall back to the full inventory data
+  else if (typeof window.inventoryData !== 'undefined' && window.inventoryData.length > 0) {
+    console.log('Using window.inventoryData with', window.inventoryData.length, 'items');
+    data = [...window.inventoryData];
+  }
+  // If neither are available, try to access the variables directly from inventory.js
+  else if (typeof filteredInventory !== 'undefined' && filteredInventory.length > 0) {
+    console.log('Using local filteredInventory with', filteredInventory.length, 'items');
+    data = [...filteredInventory];
+  }
+  else if (typeof inventoryData !== 'undefined' && inventoryData.length > 0) {
+    console.log('Using local inventoryData with', inventoryData.length, 'items');
+    data = [...inventoryData];
+  }
+  
+  if (!data || !data.length) {
+    console.warn('No inventory data available for sorting');
+    return;
+  }
+  
+  console.log(`Sorting by ${column} in ${direction} order`);
+  
+  // Sort the data
+  const sortedData = sortData(data, column, direction);
+  
+  // Update the UI with sorted data
+  if (typeof window.renderInventoryTable === 'function') {
+    console.log('Using window.renderInventoryTable function');
+    window.renderInventoryTable(sortedData);
+  } else if (typeof renderInventoryTable === 'function') {
+    console.log('Using local renderInventoryTable function');
+    renderInventoryTable(sortedData);
+  } else {
+    console.error('renderInventoryTable function not found');
+    return; // Exit early if we can't render
+  }
+  
+  // Update the global filtered inventory with the sorted data
+  if (typeof window.filteredInventory !== 'undefined') {
+    window.filteredInventory = sortedData;
+  }
+  
+  // Also update the local variable if it exists
+  if (typeof filteredInventory !== 'undefined') {
+    filteredInventory = sortedData;
+  }
+  
+  // Re-apply stock status styles after rendering
+  setTimeout(applyStockStatusStyling, 50);
+  
+  // Show notification if available
+  showSortNotification(column, direction);
+}
+
+// Perform actual sorting of data
+function sortData(data, column, direction) {
+  return data.sort((a, b) => {
+    let valueA, valueB;
+    
+    // Handle special cases
+    switch (column) {
+      case 'id':
+        valueA = String(a.id || '');
+        valueB = String(b.id || '');
+        break;
+      case 'status':
+        // Sort by quantity (which determines status)
+        valueA = parseInt(a.quantity) || 0;
+        valueB = parseInt(b.quantity) || 0;
+        break;
+      case 'quantity':
+        valueA = parseInt(a.quantity) || 0;
+        valueB = parseInt(b.quantity) || 0;
+        break;
+      case 'price':
+        valueA = parseFloat(a.price) || 0;
+        valueB = parseFloat(b.price) || 0;
+        break;
+      case 'buyingPrice':
+        valueA = parseFloat(a.buyingPrice || a.buying_price || a.cost_price || 0);
+        valueB = parseFloat(b.buyingPrice || b.buying_price || b.cost_price || 0);
+        break;
+      case 'dimension':
+        valueA = String(a.dimension || a.dimensions || '');
+        valueB = String(b.dimension || b.dimensions || '');
+        break;
+      case 'createdAt':
+        valueA = new Date(a.createdAt || a.created_at || 0).getTime();
+        valueB = new Date(b.createdAt || b.created_at || 0).getTime();
+        break;
+      default:
+        // Default case for text columns
+        valueA = String(a[column] || '');
+        valueB = String(b[column] || '');
+    }
+    
+    // Compare values based on data type
+    let result;
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      // Case-insensitive string comparison
+      result = valueA.toLowerCase().localeCompare(valueB.toLowerCase());
+    } else {
+      // Numeric comparison
+      result = valueA - valueB;
+    }
+    
+    // Apply sort direction
+    return direction === 'asc' ? result : -result;
+  });
+}
+
+// Show notification about sort
+function showSortNotification(column, direction) {
+  // Format column name for display
+  const columnDisplay = column.replace(/([A-Z])/g, ' $1').toLowerCase();
+  const directionText = direction === 'asc' ? 'ascending' : 'descending';
+  
+  // Show notification using available notification system
+  if (window.NotificationSystem) {
+    window.NotificationSystem.show(`Sorted by ${columnDisplay} (${directionText})`, { 
+      type: 'info',
+      playSound: false
+    });
+  } else if (typeof showNotification === 'function') {
+    showNotification(`Sorted by ${columnDisplay} (${directionText})`, 'info');
+  } else {
+    console.log(`Sorted by ${columnDisplay} (${directionText})`);
+  }
+}
+
+// Add CSS styles for sortable headers
+function addSortStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .sort-header {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    th.sort-header:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .fa-sort, .fa-sort-up, .fa-sort-down {
+      margin-left: 5px;
+    }
+    
+    .fa-sort-up, .fa-sort-down {
+      color: #fff;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Add CSS styles for stock status
+function addStockStatusStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Status badge styling */
+    .status-badge {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      text-align: center;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    /* In stock - vibrant green with subtle gradient */
+    .status-success {
+      background: linear-gradient(145deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Low stock - warm amber with subtle gradient */
+    .status-warning {
+      background: linear-gradient(145deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      animation: pulse-warning 2s infinite;
+    }
+    
+    /* Out of stock - vibrant red with subtle gradient */
+    .status-danger {
+      background: linear-gradient(145deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Enhanced hover effects */
+    .status-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Low stock pulsing animation */
+    @keyframes pulse-warning {
+      0% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+      }
+    }
+    
+    /* Row highlighting for low stock */
+    .low-stock-blink {
+      animation: highlight-row 3s ease infinite;
+    }
+    
+    /* Subtle row highlight animation */
+    @keyframes highlight-row {
+      0%, 100% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: rgba(245, 158, 11, 0.05);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Apply stock status styling to table rows after rendering
+function applyStockStatusStyling() {
+  // Find all status badges
+  const statusBadges = document.querySelectorAll('.status-badge');
+  
+  statusBadges.forEach(badge => {
+    const text = badge.textContent.trim().toLowerCase();
+    
+    // Clean up any existing classes
+    badge.classList.remove('status-success', 'status-warning', 'status-danger');
+    
+    // Apply appropriate class based on text content
+    if (text.includes('out of stock')) {
+      badge.classList.add('status-danger');
+    } else if (text.includes('low stock')) {
+      badge.classList.add('status-warning');
+      
+      // Add blinking effect to the row
+      const row = badge.closest('tr');
+      if (row) {
+        row.classList.add('low-stock-blink');
+      }
+    } else {
+      badge.classList.add('status-success');
+    }
+  });
+}
+
+// Function to get inventory data - exposed globally
+window.getInventoryData = function() {
+  if (window.filteredInventory && window.filteredInventory.length > 0) {
+    return window.filteredInventory;
+  } else if (window.inventoryData && window.inventoryData.length > 0) {
+    return window.inventoryData;
+  }
+  return [];
+};
+
+// Initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('inventory-sort.js: DOM loaded, setting up sorting functionality');
+  
+  // First attempt at initialization
+  initInventorySorting();
+  
+  // Wait a bit longer to ensure table and data are fully loaded
+  setTimeout(() => {
+    console.log('Delayed initialization of inventory sorting');
+    initInventorySorting();
+    applyStockStatusStyling();
+    
+    // Check if render function exists and hook into it if it doesn't already
+    if (!window.renderInventoryTableHooked && 
+        (typeof window.renderInventoryTable === 'function' || 
+         typeof renderInventoryTable === 'function')) {
+      
+      hookRenderFunction();
+    }
+  }, 1000);
+});
+
+// Hook into the render function to re-apply sorting when table updates
+function hookRenderFunction() {
+  console.log('Hooking into inventory render function');
+  
+  // First try to hook into window.renderInventoryTable
+  if (typeof window.renderInventoryTable === 'function') {
+    const originalRenderInventoryTable = window.renderInventoryTable;
+    window.renderInventoryTable = function(...args) {
+      // Call the original function
+      originalRenderInventoryTable.apply(this, args);
+      
+      // Re-initialize sorting and apply stock status styling
+      setTimeout(() => {
+        setupHeaderSorting();
+        applyStockStatusStyling();
+        if (currentSort.column) {
+          // Maintain current sort if there was one
+          updateSortIndicatorsFromDropdown(currentSort.column, currentSort.direction);
+        }
+      }, 50);
+    };
+    window.renderInventoryTableHooked = true;
+    console.log('Successfully hooked window.renderInventoryTable');
+  } 
+  // Then try to hook into local renderInventoryTable if available
+  else if (typeof renderInventoryTable === 'function') {
+    const originalRenderInventoryTable = renderInventoryTable;
+    window.renderInventoryTable = renderInventoryTable;
+    renderInventoryTable = function(...args) {
+      // Call the original function
+      originalRenderInventoryTable.apply(this, args);
+      
+      // Re-initialize sorting and apply stock status styling
+      setTimeout(() => {
+        setupHeaderSorting();
+        applyStockStatusStyling();
+        if (currentSort.column) {
+          // Maintain current sort if there was one
+          updateSortIndicatorsFromDropdown(currentSort.column, currentSort.direction);
+        }
+      }, 50);
+    };
+    window.renderInventoryTableHooked = true;
+    console.log('Successfully hooked local renderInventoryTable');
+  }
+}
+
+// Check for render function every second until we find it (up to 10 attempts)
+let attempts = 0;
+const maxAttempts = 10;
+const checkInterval = setInterval(() => {
+  attempts++;
+  
+  if (window.renderInventoryTableHooked) {
+    console.log('Render function already hooked, clearing interval');
+    clearInterval(checkInterval);
+    return;
+  }
+  
+  if (typeof window.renderInventoryTable === 'function' || typeof renderInventoryTable === 'function') {
+    console.log('Found render function on attempt', attempts);
+    hookRenderFunction();
+    clearInterval(checkInterval);
+  } else if (attempts >= maxAttempts) {
+    console.warn('Could not find render function after', maxAttempts, 'attempts');
+    clearInterval(checkInterval);
+  }
+}, 1000); 

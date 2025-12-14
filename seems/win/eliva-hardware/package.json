@@ -1,0 +1,35 @@
+{
+  "name": "eliva-hardware",
+  "version": "1.0.0",
+  "description": "Hardware inventory management system for pipe selling",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^36.2.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "sqlite3": "^5.1.7"
+  },
+  "build": {
+    "appId": "com.eliva.hardware",
+    "productName": "Eliva Hardware",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "src/assets/icon.icns"
+    }
+  }
+} 

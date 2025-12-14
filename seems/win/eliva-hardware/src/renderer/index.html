@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliva Hardware - Inventory Management</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="../styles/animations.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Custom Title Bar -->
+    <div class="title-bar">
+      <div class="title-bar-drag-area">
+        <div class="app-logo">
+          <i class="fas fa-box"></i>
+          <span>Eliva Hardware</span>
+        </div>
+      </div>
+      <div class="window-controls">
+        <button id="minimize-btn" class="window-control minimize">
+          <i class="fas fa-minus"></i>
+        </button>
+        <button id="maximize-btn" class="window-control maximize">
+          <i class="fas fa-expand"></i>
+        </button>
+        <button id="close-btn" class="window-control close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-container">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar">
+        <ul class="nav-menu">
+          <li class="nav-item active" data-page="dashboard">
+            <a href="#dashboard">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item" data-page="inventory">
+            <a href="#inventory">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+          <li class="nav-item" data-page="sales">
+            <a href="#sales">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Sales</span>
+            </a>
+          </li>
+          <li class="nav-item" data-page="reports">
+            <a href="#reports">
+              <i class="fas fa-chart-bar"></i>
+              <span>Reports</span>
+            </a>
+          </li>
+          <li class="nav-item" data-page="alerts">
+            <a href="#alerts">
+              <i class="fas fa-bell"></i>
+              <span>Alerts</span>
+              <span class="alert-badge" id="alerts-count">0</span>
+            </a>
+          </li>
+          <li class="nav-item" data-page="settings">
+            <a href="#settings">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Content Pages -->
+      <main class="main-content">
+        <!-- Dashboard Page -->
+        <section id="dashboard" class="page active">
+          <div class="page-header">
+            <h1>Dashboard</h1>
+            <p class="date" id="current-date"></p>
+          </div>
+          
+          <div class="stats-container">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Today's Sales</h3>
+                <p class="stat-value" id="today-sales">$0.00</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 0%</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-box"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Total Items</h3>
+                <p class="stat-value" id="total-items">0</p>
+                <p class="stat-change"><i class="fas fa-minus"></i> 0%</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Low Stock</h3>
+                <p class="stat-value" id="low-stock-count">0</p>
+                <p class="stat-change negative"><i class="fas fa-arrow-down"></i> 0%</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Monthly Profit</h3>
+                <p class="stat-value" id="monthly-profit">$0.00</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 0%</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dashboard-content">
+            <div class="chart-container">
+              <h2>Sales Overview</h2>
+              <canvas id="sales-chart"></canvas>
+            </div>
+            
+            <div class="recent-activity">
+              <h2>Recent Activity</h2>
+              <div class="activity-list" id="recent-activity-list">
+                <!-- Activity items will be added dynamically -->
+                <div class="activity-item">
+                  <div class="activity-icon sale">
+                    <i class="fas fa-shopping-cart"></i>
+                  </div>
+                  <div class="activity-details">
+                    <p class="activity-title">New Sale</p>
+                    <p class="activity-description">Sale #INV-1001 to John Doe</p>
+                    <p class="activity-time">Just now</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="ai-recommendations">
+            <h2><i class="fas fa-robot"></i> AI Recommendations</h2>
+            <div class="recommendation-container" id="ai-recommendations">
+              <div class="recommendation-item">
+                <div class="recommendation-icon">
+                  <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="recommendation-content">
+                  <h3>Stock Optimization</h3>
+                  <p>Consider restocking PVC pipes (1.5" diameter) as they're selling quickly.</p>
+                </div>
+              </div>
+              <div class="recommendation-item">
+                <div class="recommendation-icon">
+                  <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="recommendation-content">
+                  <h3>Sales Strategy</h3>
+                  <p>Galvanized pipes have the highest profit margin. Consider promoting these items.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inventory Page -->
+        <section id="inventory" class="page">
+          <div class="page-header">
+            <h1>Inventory Management</h1>
+            <div class="page-actions">
+              <button id="add-item-btn" class="btn primary">
+                <i class="fas fa-plus"></i> Add New Item
+              </button>
+              <div class="search-container">
+                <input type="text" id="inventory-search" placeholder="Search inventory...">
+                <i class="fas fa-search"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="inventory-filters">
+            <div class="filter-group">
+              <label>Type:</label>
+              <select id="filter-type">
+                <option value="">All Types</option>
+                <option value="PVC">PVC</option>
+                <option value="Metal">Metal</option>
+                <option value="Galvanized">Galvanized</option>
+                <option value="Copper">Copper</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Diameter:</label>
+              <select id="filter-diameter">
+                <option value="">All Sizes</option>
+                <option value="0.5">0.5"</option>
+                <option value="0.75">0.75"</option>
+                <option value="1">1"</option>
+                <option value="1.5">1.5"</option>
+                <option value="2">2"</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Sort By:</label>
+              <select id="sort-by">
+                <option value="name">Name</option>
+                <option value="quantity">Quantity</option>
+                <option value="price">Price</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="inventory-table-container">
+            <table class="data-table" id="inventory-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Color</th>
+                  <th>Diameter</th>
+                  <th>Length</th>
+                  <th>Quantity</th>
+                  <th>Cost Price</th>
+                  <th>Selling Price</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body">
+                <!-- Inventory items will be added dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Sales Page -->
+        <section id="sales" class="page">
+          <div class="page-header">
+            <h1>Sales Management</h1>
+            <div class="page-actions">
+              <button id="new-sale-btn" class="btn primary">
+                <i class="fas fa-plus"></i> New Sale
+              </button>
+              <div class="search-container">
+                <input type="text" id="sales-search" placeholder="Search sales...">
+                <i class="fas fa-search"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sales-filters">
+            <div class="filter-group">
+              <label>Date Range:</label>
+              <input type="date" id="sales-date-from">
+              <span>to</span>
+              <input type="date" id="sales-date-to">
+            </div>
+            <div class="filter-group">
+              <label>Buyer:</label>
+              <input type="text" id="filter-buyer" placeholder="Buyer name">
+            </div>
+            <button id="apply-sales-filters" class="btn secondary">Apply Filters</button>
+            <button id="reset-sales-filters" class="btn outline">Reset</button>
+          </div>
+          
+          <div class="sales-table-container">
+            <table class="data-table" id="sales-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Buyer</th>
+                  <th>TIN</th>
+                  <th>Items</th>
+                  <th>Total Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sales-table-body">
+                <!-- Sales records will be added dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Reports Page -->
+        <section id="reports" class="page">
+          <div class="page-header">
+            <h1>Reports</h1>
+            <div class="page-actions">
+              <div class="report-period-selector">
+                <button class="btn outline active" data-period="day">Day</button>
+                <button class="btn outline" data-period="week">Week</button>
+                <button class="btn outline" data-period="month">Month</button>
+                <button class="btn outline" data-period="quarter">Quarter</button>
+                <button class="btn outline" data-period="year">Year</button>
+              </div>
+              <button id="export-report-btn" class="btn primary">
+                <i class="fas fa-file-export"></i> Export PDF
+              </button>
+            </div>
+          </div>
+          
+          <div class="reports-container">
+            <div class="report-section">
+              <h2>Sales Summary</h2>
+              <div class="report-cards">
+                <div class="report-card">
+                  <h3>Total Sales</h3>
+                  <p class="report-value" id="report-total-sales">$0.00</p>
+                </div>
+                <div class="report-card">
+                  <h3>Total Cost</h3>
+                  <p class="report-value" id="report-total-cost">$0.00</p>
+                </div>
+                <div class="report-card">
+                  <h3>Profit</h3>
+                  <p class="report-value" id="report-profit">$0.00</p>
+                </div>
+                <div class="report-card">
+                  <h3>Profit Margin</h3>
+                  <p class="report-value" id="report-profit-margin">0%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="report-charts">
+              <div class="chart-container">
+                <h2>Sales Trend</h2>
+                <canvas id="sales-trend-chart"></canvas>
+              </div>
+              <div class="chart-container">
+                <h2>Top Selling Items</h2>
+                <canvas id="top-items-chart"></canvas>
+              </div>
+            </div>
+            
+            <div class="report-section">
+              <h2>Profit Analysis</h2>
+              <table class="data-table" id="profit-analysis-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Quantity Sold</th>
+                    <th>Revenue</th>
+                    <th>Cost</th>
+                    <th>Profit</th>
+                    <th>Margin</th>
+                  </tr>
+                </thead>
+                <tbody id="profit-analysis-body">
+                  <!-- Profit analysis data will be added dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Alerts Page -->
+        <section id="alerts" class="page">
+          <div class="page-header">
+            <h1>Alerts & Notifications</h1>
+          </div>
+          
+          <div class="alerts-container">
+            <div class="alert-section">
+              <h2>Low Stock Alerts</h2>
+              <div class="alert-list" id="low-stock-alerts">
+                <!-- Low stock alerts will be added dynamically -->
+              </div>
+            </div>
+            
+            <div class="alert-section">
+              <h2>System Notifications</h2>
+              <div class="alert-list" id="system-notifications">
+                <!-- System notifications will be added dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Page -->
+        <section id="settings" class="page">
+          <div class="page-header">
+            <h1>Settings</h1>
+          </div>
+          
+          <div class="settings-container">
+            <div class="settings-section">
+              <h2>Company Information</h2>
+              <form id="company-settings-form">
+                <div class="form-group">
+                  <label for="company-name">Company Name</label>
+                  <input type="text" id="company-name" name="company_name" placeholder="Company Name">
+                </div>
+                <div class="form-group">
+                  <label for="company-address">Address</label>
+                  <textarea id="company-address" name="company_address" placeholder="Company Address"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="company-phone">Phone</label>
+                  <input type="text" id="company-phone" name="company_phone" placeholder="Phone Number">
+                </div>
+                <div class="form-group">
+                  <label for="company-email">Email</label>
+                  <input type="email" id="company-email" name="company_email" placeholder="Email Address">
+                </div>
+              </form>
+            </div>
+            
+            <div class="settings-section">
+              <h2>Invoice Settings</h2>
+              <form id="invoice-settings-form">
+                <div class="form-group">
+                  <label for="invoice-prefix">Invoice Prefix</label>
+                  <input type="text" id="invoice-prefix" name="invoice_prefix" placeholder="INV-">
+                </div>
+                <div class="form-group">
+                  <label for="next-invoice-number">Next Invoice Number</label>
+                  <input type="number" id="next-invoice-number" name="next_invoice_number" min="1">
+                </div>
+                <div class="form-group">
+                  <label for="tax-rate">Tax Rate (%)</label>
+                  <input type="number" id="tax-rate" name="tax_rate" min="0" max="100" step="0.01">
+                </div>
+              </form>
+            </div>
+            
+            <div class="settings-section">
+              <h2>Appearance</h2>
+              <div class="theme-selector">
+                <div class="theme-option active" data-theme="dark">
+                  <div class="theme-preview dark"></div>
+                  <span>Dark Theme</span>
+                </div>
+                <div class="theme-option" data-theme="light">
+                  <div class="theme-preview light"></div>
+                  <span>Light Theme</span>
+                </div>
+                <div class="theme-option" data-theme="blue">
+                  <div class="theme-preview blue"></div>
+                  <span>Blue Theme</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button id="save-settings-btn" class="btn primary">Save Settings</button>
+              <button id="reset-settings-btn" class="btn outline">Reset to Default</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Templates -->
+  <div class="modal" id="add-item-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New Item</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-item-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-name">Item Name</label>
+              <input type="text" id="item-name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="item-type">Type</label>
+              <select id="item-type" name="type" required>
+                <option value="">Select Type</option>
+                <option value="PVC">PVC</option>
+                <option value="Metal">Metal</option>
+                <option value="Galvanized">Galvanized</option>
+                <option value="Copper">Copper</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-color">Color</label>
+              <input type="text" id="item-color" name="color">
+            </div>
+            <div class="form-group">
+              <label for="item-diameter">Diameter (inches)</label>
+              <input type="number" id="item-diameter" name="diameter" step="0.25" min="0">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-length">Length (feet)</label>
+              <input type="number" id="item-length" name="length" step="0.5" min="0">
+            </div>
+            <div class="form-group">
+              <label for="item-thickness">Thickness (mm)</label>
+              <input type="number" id="item-thickness" name="thickness" step="0.1" min="0">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-quantity">Quantity</label>
+              <input type="number" id="item-quantity" name="quantity" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="item-low-stock">Low Stock Threshold</label>
+              <input type="number" id="item-low-stock" name="low_stock_threshold" min="1" value="10">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-cost">Cost Price</label>
+              <input type="number" id="item-cost" name="cost_price" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="item-price">Selling Price</label>
+              <input type="number" id="item-price" name="selling_price" step="0.01" min="0" required>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn outline modal-cancel">Cancel</button>
+        <button class="btn primary" id="save-item-btn">Save Item</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="edit-item-modal">
+    <!-- Similar to add-item-modal but with pre-filled values -->
+  </div>
+
+  <div class="modal" id="new-sale-modal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h2>New Sale</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-sale-form">
+          <div class="form-section">
+            <h3>Buyer Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="buyer-name">Buyer Name</label>
+                <input type="text" id="buyer-name" name="buyer_name" required>
+              </div>
+              <div class="form-group">
+                <label for="buyer-title">Title/Position</label>
+                <input type="text" id="buyer-title" name="buyer_title">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="buyer-tin">TIN Number</label>
+                <input type="text" id="buyer-tin" name="buyer_tin">
+              </div>
+              <div class="form-group">
+                <label for="payment-method">Payment Method</label>
+                <select id="payment-method" name="payment_method">
+                  <option value="Cash">Cash</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Check">Check</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-section">
+            <h3>Items</h3>
+            <div class="sale-items-container">
+              <table class="sale-items-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sale-items-body">
+                  <!-- Sale items will be added dynamically -->
+                </tbody>
+              </table>
+              <button type="button" id="add-sale-item" class="btn secondary">
+                <i class="fas fa-plus"></i> Add Item
+              </button>
+            </div>
+          </div>
+          
+          <div class="sale-summary">
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span id="sale-subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax:</span>
+              <span id="sale-tax">$0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total:</span>
+              <span id="sale-total">$0.00</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn outline modal-cancel">Cancel</button>
+        <button class="btn primary" id="complete-sale-btn">Complete Sale</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="view-sale-modal">
+    <!-- Sale details view modal -->
+  </div>
+
+  <div class="toast-container" id="toast-container">
+    <!-- Toast notifications will be added dynamically -->
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../renderer/app.js"></script>
+  <script src="../renderer/dashboard.js"></script>
+  <script src="../renderer/inventory.js"></script>
+  <script src="../renderer/sales.js"></script>
+  <script src="../renderer/reports.js"></script>
+  <script src="../renderer/alerts.js"></script>
+  <script src="../renderer/settings.js"></script>
+</body>
+</html> 

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliva Hardware - Login</title>
+  <!-- Bootstrap CSS -->
+  <link href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/font.css">
+  <link rel="stylesheet" href="../../public/assets/css/style.css">
+  <link rel="stylesheet" href="../../public/assets/css/animations.css">
+  <style>
+    :root {
+      --primary: #3498db;
+      --primary-dark: #2980b9;
+      --secondary: #e74c3c;
+      --dark: #1a1a2e;
+      --darker: #16213e;
+      --light: #f0f0f0;
+    }
+    
+    /* Splash Screen Styles */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0a0a20; /* Darker background for galaxy effect */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+      overflow: hidden;
+    }
+    
+    #splash-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    /* Galaxy background */
+    .galaxy-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, #16213e 0%, #0a0a20 70%);
+      z-index: 1;
+    }
+    
+    /* Stars */
+    .stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    
+    .star {
+      position: absolute;
+      background-color: white;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle 5s infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    
+    /* Static logo with diamond-like rays */
+    .splash-logo-container {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin-bottom: 30px;
+      z-index: 2;
+    }
+    
+    .splash-logo {
+      width: 150px;
+      height: auto;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    
+    /* Diamond rays */
+    .diamond-rays {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    
+    .diamond-ray {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+      animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+      0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
+      50% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Generate multiple rays at different angles */
+    .diamond-ray:nth-child(1) { animation-delay: 0s; }
+    .diamond-ray:nth-child(2) { animation-delay: 0.3s; transform: translate(-50%, -50%) rotate(30deg); }
+    .diamond-ray:nth-child(3) { animation-delay: 0.6s; transform: translate(-50%, -50%) rotate(60deg); }
+    .diamond-ray:nth-child(4) { animation-delay: 0.9s; transform: translate(-50%, -50%) rotate(90deg); }
+    .diamond-ray:nth-child(5) { animation-delay: 1.2s; transform: translate(-50%, -50%) rotate(120deg); }
+    .diamond-ray:nth-child(6) { animation-delay: 1.5s; transform: translate(-50%, -50%) rotate(150deg); }
+    
+    /* Glowing effect around logo */
+    .glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(52, 152, 219, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 2;
+      animation: pulse-glow 4s infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+    }
+    
+    .splash-title {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 10px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+    }
+    
+    .splash-subtitle {
+      font-size: 1.2rem;
+      color: rgba(240, 240, 240, 0.8);
+      margin-bottom: 30px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .progress-container {
+      width: 300px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    /* Floating particles */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    
+    .particle {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      width: 2px;
+      height: 2px;
+      animation: float 15s infinite linear;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0);
+      }
+      25% {
+        transform: translateY(-20px) translateX(10px);
+      }
+      50% {
+        transform: translateY(-35px) translateX(-15px);
+      }
+      75% {
+        transform: translateY(-10px) translateX(-25px);
+      }
+    }
+    
+    .main-container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+    }
+    
+    .login-container {
+      width: 400px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
+      transform: rotateX(5deg) rotateY(0deg);
+      transition: all 0.5s ease;
+      position: relative;
+      overflow: hidden;
+      animation: containerAppear 1s forwards;
+    }
+    
+    @keyframes containerAppear {
+      0% {
+        opacity: 0;
+        transform: rotateX(10deg) rotateY(0deg) translateY(50px);
+      }
+      100% {
+        opacity: 1;
+        transform: rotateX(5deg) rotateY(0deg) translateY(0);
+      }
+    }
+    
+    .login-container:hover {
+      transform: rotateX(0deg) rotateY(0deg);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .logo::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      width: 50px;
+      height: 3px;
+      background: var(--primary);
+      transform: translateX(-50%);
+      border-radius: 3px;
+    }
+    
+    .logo h1 {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+      animation: logoAppear 1.2s forwards;
+    }
+    
+    @keyframes logoAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .logo span {
+      color: var(--secondary);
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+      animation: formAppear 1.4s forwards;
+    }
+    
+    @keyframes formAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      opacity: 0.7;
+      animation: labelAppear 1.3s forwards;
+    }
+    
+    @keyframes labelAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 0.7;
+        transform: translateY(0);
+      }
+    }
+    
+    .input-group input {
+      padding-left: 45px; 
+    }
+    
+    .input-group i {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    
+    .form-control {
+      height: 50px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      box-shadow: 0 5px 10px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 10px 20px -10px rgba(52, 152, 219, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+      height: 50px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      box-shadow: 0 5px 15px -5px rgba(52, 152, 219, 0.5);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      animation: btnAppear 1.5s forwards;
+    }
+    
+    @keyframes btnAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: all 0.6s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px -10px rgba(52, 152, 219, 0.7);
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    
+    .alert-danger {
+      border-radius: 10px;
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      color: var(--secondary);
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      display: none;
+      animation: alertShake 0.5s forwards;
+    }
+    
+    @keyframes alertShake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    /* Background circles */
+    .bg-circles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+    
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: circleFloat 15s infinite ease-in-out;
+    }
+    
+    .circle-1 {
+      top: -100px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #3498db, transparent 70%);
+      animation-delay: 0s;
+    }
+    
+    .circle-2 {
+      bottom: -150px;
+      right: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, #e74c3c, transparent 70%);
+      animation-delay: 5s;
+    }
+    
+    .circle-3 {
+      top: 50%;
+      left: 50%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, #2ecc71, transparent 70%);
+      animation-delay: 10s;
+    }
+    
+    @keyframes circleFloat {
+      0%, 100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.1;
+      }
+      50% {
+        transform: scale(1.2) translate(20px, 20px);
+        opacity: 0.15;
+      }
+      100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="hidden">
+    <div class="galaxy-bg"></div>
+    
+    <!-- Stars -->
+    <div class="stars" id="stars-container"></div>
+    
+    <!-- Particles -->
+    <div class="particles" id="particles-container"></div>
+    
+    <!-- Logo -->
+    <div class="splash-logo-container">
+      <div class="glow"></div>
+      <div class="diamond-rays">
+        <div class="diamond-ray"></div>
+        <div class="diamond-ray"></div>
+        <div class="diamond-ray"></div>
+        <div class="diamond-ray"></div>
+        <div class="diamond-ray"></div>
+        <div class="diamond-ray"></div>
+      </div>
+      <img src="../assets/logo.png" alt="Eliva Hardware Logo" class="splash-logo">
+    </div>
+    
+    <h1 class="splash-title">Welcome</h1>
+    <p class="splash-subtitle">Loading your dashboard...</p>
+    
+    <div class="progress-container">
+      <div class="progress-bar" id="splash-progress"></div>
+    </div>
+  </div>
+  
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Background Circles -->
+    <div class="bg-circles">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+      <div class="circle circle-3"></div>
+    </div>
+    
+    <!-- Login Container -->
+    <div class="login-container">
+      <div class="logo">
+        <h1>Eliva<span>Hardware</span></h1>
+      </div>
+      
+      <div class="alert alert-danger" id="error-alert" style="display: none;">
+        Invalid username or password
+      </div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" class="form-control" id="username" placeholder="Username">
+          </div>
+          
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" class="form-control" id="password" placeholder="Password">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    console.log('Index page loaded');
+    
+    // Check if already logged in
+    try {
+      const storedSession = localStorage.getItem('eliva_session');
+      if (storedSession) {
+        const session = JSON.parse(storedSession);
+        if (session && session.loggedIn) {
+          console.log('User already logged in, redirecting to dashboard');
+          window.location.href = 'dashboard.html';
+        }
+      }
+    } catch (e) {
+      console.error('Error checking stored session:', e);
+    }
+    
+    // Function to handle login failure
+    function handleLoginFailure(errorMessage) {
+      console.log('Login failed:', errorMessage);
+      
+      // Re-enable the login button
+      const loginButton = document.querySelector('button[type="submit"]');
+      if (loginButton) {
+        loginButton.disabled = false;
+        loginButton.innerHTML = 'Login';
+      }
+      
+      // Show error with animation
+      const errorAlert = document.getElementById('error-alert');
+      errorAlert.textContent = errorMessage;
+      errorAlert.style.display = 'block';
+      errorAlert.style.animation = 'none';
+      setTimeout(function() {
+        errorAlert.style.animation = 'alertShake 0.5s forwards';
+      }, 10);
+    }
+    
+    // Function to show splash screen and navigate to dashboard
+    function showSplashScreenAndNavigate(username) {
+      console.log('Showing splash screen and navigating to dashboard');
+      // Show splash screen
+      const splashScreen = document.getElementById('splash-screen');
+      const mainContainer = document.querySelector('.main-container');
+      
+      // Hide login container
+      const loginContainer = document.querySelector('.login-container');
+      if (loginContainer) {
+        loginContainer.style.animation = 'none';
+        setTimeout(function() {
+          loginContainer.style.animation = 'containerSuccess 0.5s forwards';
+          
+          // After login container animation, show splash screen
+          setTimeout(function() {
+            // Hide main container
+            if (mainContainer) {
+              mainContainer.style.opacity = '0';
+            }
+            
+            // Show splash screen
+            if (splashScreen) {
+              splashScreen.classList.remove('hidden');
+              splashScreen.style.display = 'flex';
+              
+              // Update splash text
+              const splashTitle = document.querySelector('.splash-title');
+              if (splashTitle) {
+                splashTitle.textContent = 'Welcome, ' + username;
+              }
+              
+              const splashSubtitle = document.querySelector('.splash-subtitle');
+              if (splashSubtitle) {
+                splashSubtitle.textContent = 'Preparing your dashboard...';
+              }
+              
+              // Start progress animation
+              const progressBar = document.getElementById('splash-progress');
+              if (progressBar) {
+                progressBar.style.width = '0%';
+                
+                let progress = 0;
+                const progressInterval = setInterval(function() {
+                  progress += 2;
+                  progressBar.style.width = progress + '%';
+                  
+                  if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    console.log('Progress complete, navigating to dashboard');
+                    
+                    // Navigate to dashboard after a short delay
+                    setTimeout(function() {
+                      window.location.href = 'dashboard.html';
+                    }, 500);
+                  }
+                }, 30);
+              } else {
+                console.error('Progress bar not found, navigating directly');
+                setTimeout(function() {
+                  window.location.href = 'dashboard.html';
+                }, 1500);
+              }
+            } else {
+              console.error('Splash screen not found, navigating directly');
+              setTimeout(function() {
+                window.location.href = 'dashboard.html';
+              }, 1000);
+            }
+          }, 600);
+        }, 10);
+      } else {
+        console.error('Login container not found, navigating directly');
+        setTimeout(function() {
+          window.location.href = 'dashboard.html';
+        }, 500);
+      }
+    }
+    
+    // Add success animation
+    (function() {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes containerSuccess {
+          0% {
+            transform: rotateX(5deg) rotateY(0deg) translateY(0);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
+          }
+          50% {
+            transform: rotateX(0deg) rotateY(0deg) translateY(-20px);
+            box-shadow: 0 40px 80px -20px rgba(52, 152, 219, 0.8);
+          }
+          100% {
+            transform: rotateX(0deg) rotateY(0deg) translateY(50px);
+            opacity: 0;
+            box-shadow: 0 50px 100px -25px rgba(52, 152, 219, 0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    })();
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM content loaded on index page');
+      
+      // Create stars
+      const starsContainer = document.getElementById('stars-container');
+      if (starsContainer) {
+        for (let i = 0; i < 100; i++) {
+          const star = document.createElement('div');
+          star.classList.add('star');
+          star.style.width = Math.random() * 3 + 'px';
+          star.style.height = star.style.width;
+          star.style.left = Math.random() * 100 + '%';
+          star.style.top = Math.random() * 100 + '%';
+          star.style.animationDelay = Math.random() * 5 + 's';
+          starsContainer.appendChild(star);
+        }
+      }
+      
+      // Create particles
+      const particlesContainer = document.getElementById('particles-container');
+      if (particlesContainer) {
+        for (let i = 0; i < 50; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('particle');
+          particle.style.width = Math.random() * 4 + 'px';
+          particle.style.height = particle.style.width;
+          particle.style.left = Math.random() * 100 + '%';
+          particle.style.top = Math.random() * 100 + '%';
+          particle.style.animationDelay = Math.random() * 5 + 's';
+          particle.style.opacity = Math.random() * 0.5 + 0.1;
+          particlesContainer.appendChild(particle);
+        }
+      }
+      
+      // Handle login form submission
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function(event) {
+          event.preventDefault();
+          
+          const username = document.getElementById('username').value;
+          const password = document.getElementById('password').value;
+          const errorAlert = document.getElementById('error-alert');
+          
+          // Disable the login button to prevent multiple submissions
+          const loginButton = document.querySelector('button[type="submit"]');
+          if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+          }
+          
+          // Simple validation for empty fields
+          if (!username || !password) {
+            errorAlert.textContent = 'Please enter both username and password';
+            errorAlert.style.display = 'block';
+            
+            // Re-enable the login button
+            if (loginButton) {
+              loginButton.disabled = false;
+              loginButton.innerHTML = 'Login';
+            }
+            return;
+          }
+          
+          console.log('Attempting login with:', username);
+          
+          // Direct validation of credentials - hardcoded for this demo app
+          // In a real app, this would be handled securely on the server
+          if (username === 'eliva' && password === 'eliva@2011') {
+            console.log('Login successful, showing splash screen');
+            // Success - hide error and prepare for dashboard
+            if (errorAlert) {
+              errorAlert.style.display = 'none';
+            }
+            
+            console.log('Login successful, attempting to use Electron API');
+            // Try to use the Electron API if available
+            if (window.electronAPI && typeof window.electronAPI.login === 'function') {
+              console.log('Electron API available, calling login');
+              window.electronAPI.login({ username, password })
+                .then(function(result) {
+                  console.log('Electron login API result:', result);
+                  
+                  if (result && result.success) {
+                    console.log('API login successful, storing session');
+                    // Store the session returned from the API
+                    localStorage.setItem('eliva_session', JSON.stringify(result.session));
+                    showSplashScreenAndNavigate(username);
+                  } else {
+                    console.log('API login failed:', result);
+                    // Handle login failure from API
+                    handleLoginFailure('Authentication failed. Please try again.');
+                  }
+                })
+                .catch(function(err) {
+                  console.warn('Electron login API error:', err);
+                  console.log('Using fallback session due to API error');
+                  
+                  // Create a fallback session if API fails
+                  const fallbackSession = {
+                    username: username,
+                    loggedIn: true,
+                    loginTime: new Date().toISOString(),
+                    sessionId: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                    expiration: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString() // 24 hours
+                  };
+                  
+                  // Store fallback session in localStorage
+                  localStorage.setItem('eliva_session', JSON.stringify(fallbackSession));
+                  showSplashScreenAndNavigate(username);
+                });
+            } else {
+              console.log('Electron API not available, using localStorage only');
+              // No API available, use localStorage only
+              const fallbackSession = {
+                username: username,
+                loggedIn: true,
+                loginTime: new Date().toISOString(),
+                sessionId: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                expiration: new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString() // 24 hours
+              };
+              
+              localStorage.setItem('eliva_session', JSON.stringify(fallbackSession));
+              showSplashScreenAndNavigate(username);
+            }
+          } else {
+            handleLoginFailure('Invalid username or password');
+          }
+        });
+      } else {
+        console.error('Login form not found');
+      }
+    });
+  </script>
+  
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

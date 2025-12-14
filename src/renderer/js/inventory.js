@@ -1,0 +1,1638 @@
+/**
+ * Inventory Management System
+ * Optimized for performance with efficient data loading and caching
+ */
+
+// Global variables
+let inventoryData = [];
+let filteredInventory = []; // Store filtered inventory items
+let isDbInitialized = false; // Track if SQLite database is initialized
+let productTypes = {
+  'Pipes': ['PVC Pipe', 'HDPE Pipe', 'Steel Pipe', 'Copper Pipe', 'PPR Pipe', 'UPVC Pipe', 'GI Pipe', 'Pipe Fittings', 'Pipe Valves'],
+  'Paint': ['Emulsion Paint', 'Enamel Paint', 'Primer', 'Varnish', 'Wood Stain', 'Spray Paint', 'Textured Paint', 'Ceiling Paint'],
+  'Building': ['Cement', 'Sand', 'Gravel', 'Bricks', 'Blocks', 'Concrete', 'Reinforcement', 'Wood', 'Plywood', 'Gypsum'],
+  'Electrical': ['Cables', 'Switches', 'Sockets', 'Circuit Breakers', 'Distribution Boards', 'Conduits', 'Electrical Boxes'],
+  'Hardware': ['Nails', 'Screws', 'Bolts', 'Nuts', 'Washers', 'Hinges', 'Locks', 'Handles', 'Brackets', 'Chains'],
+  'Tools': ['Hand Tools', 'Power Tools', 'Measuring Tools', 'Cutting Tools', 'Drilling Tools', 'Safety Equipment'],
+  'Roofing': ['Metal Sheets', 'Roof Tiles', 'Roof Panels', 'Waterproofing', 'Gutters', 'Roof Fasteners'],
+  'Flooring': ['Tiles', 'Wooden Flooring', 'Laminate Flooring', 'Vinyl Flooring', 'Carpet', 'Floor Adhesives'],
+  'Lighting': ['Bulbs', 'LED Lights', 'Tubes', 'Lamps', 'Fixtures', 'Emergency Lights', 'Decorative Lights'],
+  'Bath': ['Taps', 'Showers', 'Basins', 'Toilets', 'Bathtubs', 'Bathroom Accessories', 'Kitchen Sinks', 'Faucets']
+};
+
+// Expose inventory data globally for sorting functionality
+window.inventoryData = inventoryData;
+window.filteredInventory = filteredInventory;
+window.productTypes = productTypes;
+
+// Expose the populateProductTypes function globally
+window.populateProductTypes = populateProductTypes;
+
+// Function to synchronize global variables with window properties
+function syncGlobalInventoryData() {
+  window.inventoryData = inventoryData;
+  window.filteredInventory = filteredInventory;
+}
+
+// Initialize the inventory system with optional prefetched data
+window.initializeInventory = function(prefetchedData = null) {
+  console.time('Inventory initialization');
+  
+  // Ensure notification system is initialized
+  if (window.NotificationSystem) {
+    window.NotificationSystem.init();
+  }
+  
+  // Set up event listeners
+  setupEventListeners();
+  
+  // Set up real-time update listeners for SQLite database
+  setupDatabaseEventListeners();
+  
+  // Initialize SQLite database if available
+  initializeDatabase();
+  
+  // Load product types for dropdown
+  populateProductTypes();
+  
+  // If prefetched data was passed, use it
+  if (prefetchedData) {
+    console.log('Using prefetched inventory data');
+    inventoryData = prefetchedData;
+    renderInventoryTable(inventoryData);
+    
+    // Check for low stock items
+    checkLowStockItems(inventoryData);
+    
+    console.timeEnd('Inventory initialization');
+  } else {
+    // Otherwise load data from API
+    loadInventoryData();
+  }
+};
+
+// Initialize SQLite database
+async function initializeDatabase() {
+  try {
+    if (window.electronAPI && typeof window.electronAPI.initializeDatabase === 'function') {
+      const result = await window.electronAPI.initializeDatabase();
+      
+      if (result && result.success) {
+        console.log('SQLite database initialized successfully');
+        isDbInitialized = true;
+        
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Connected to SQLite database', { 
+            type: 'success',
+            playSound: false
+          });
+        }
+      } else {
+        console.warn('SQLite database initialization failed:', result?.error || 'Unknown error');
+      }
+    } else {
+      console.warn('SQLite database initialization function not available');
+    }
+  } catch (error) {
+    console.error('Error initializing SQLite database:', error);
+  }
+}
+
+// Set up event listeners for real-time database updates
+function setupDatabaseEventListeners() {
+  if (!window.electronAPI) return;
+  
+  // Handle inventory item added
+  if (typeof window.electronAPI.onInventoryItemAdded === 'function') {
+    // Register the event listener and keep the unsubscribe function
+    window.unsubscribeInventoryItemAdded = window.electronAPI.onInventoryItemAdded((newItem) => {
+      console.log('Real-time update: New inventory item added', newItem);
+      
+      // Only add the item if it's not already in our data (prevent duplicates)
+      if (!inventoryData.some(item => item.id === newItem.id)) {
+        inventoryData.push(newItem);
+        renderInventoryTable(inventoryData);
+        
+        // Show notification
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show(`New item added: ${newItem.description}`, { 
+            type: 'info',
+            title: 'Real-time Update'
+          });
+        }
+      }
+    });
+  }
+  
+  // Handle inventory item updated
+  if (typeof window.electronAPI.onInventoryUpdate === 'function') {
+    window.unsubscribeInventoryUpdate = window.electronAPI.onInventoryUpdate((updatedItem) => {
+      console.log('Real-time update: Inventory item updated', updatedItem);
+      
+      // Find and update the item in our local data
+      const index = inventoryData.findIndex(item => item.id === updatedItem.id);
+      if (index !== -1) {
+        inventoryData[index] = updatedItem;
+        renderInventoryTable(inventoryData);
+        
+        // Check if this is a low stock item after update
+        if (updatedItem.quantity <= (updatedItem.alertThreshold || 10)) {
+          checkLowStockItems([updatedItem]);
+        }
+        
+        // Show notification
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show(`Item updated: ${updatedItem.description}`, { 
+            type: 'info',
+            title: 'Real-time Update'
+          });
+        }
+      }
+    });
+  }
+  
+  // Handle inventory item deleted
+  if (typeof window.electronAPI.onInventoryItemDeleted === 'function') {
+    window.unsubscribeInventoryItemDeleted = window.electronAPI.onInventoryItemDeleted((deletedItem) => {
+      console.log('Real-time update: Inventory item deleted', deletedItem);
+      
+      // Support both formats: object with id property or just the id itself
+      const itemId = typeof deletedItem === 'object' ? deletedItem.id : deletedItem;
+      
+      // Find the item to display its name in the notification
+      const itemToDelete = inventoryData.find(item => item.id === itemId);
+      const itemName = itemToDelete ? itemToDelete.description : 'Unknown item';
+      
+      // Remove the item from our local data
+      inventoryData = inventoryData.filter(item => item.id !== itemId);
+      renderInventoryTable(inventoryData);
+      
+      // Show notification
+      if (window.NotificationSystem) {
+        window.NotificationSystem.show(`Item deleted: ${itemName}`, { 
+          type: 'info',
+          title: 'Real-time Update'
+        });
+      }
+    });
+  }
+  
+  // Handle database errors
+  if (typeof window.electronAPI.onDatabaseError === 'function') {
+    window.unsubscribeDatabaseError = window.electronAPI.onDatabaseError((error) => {
+      console.error('Database error:', error);
+      
+      // Show error notification
+      if (window.NotificationSystem) {
+        window.NotificationSystem.show(`Database error: ${error.message || 'Unknown error'}`, { 
+          type: 'error',
+          title: 'Database Error'
+        });
+      }
+    });
+  }
+  
+  // Clean up event listeners when window is closed
+  window.addEventListener('beforeunload', () => {
+    if (window.unsubscribeInventoryItemAdded) window.unsubscribeInventoryItemAdded();
+    if (window.unsubscribeInventoryUpdate) window.unsubscribeInventoryUpdate();
+    if (window.unsubscribeInventoryItemDeleted) window.unsubscribeInventoryItemDeleted();
+    if (window.unsubscribeDatabaseError) window.unsubscribeDatabaseError();
+  });
+}
+
+// Load inventory data from the API or fallback sources
+async function loadInventoryData() {
+  try {
+    const loadingIndicator = document.getElementById('inventory-table');
+    loadingIndicator.innerHTML = `
+      <tr>
+        <td colspan="11" class="text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary me-2" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span>Loading inventory data...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    
+    // Show loading notification
+    if (window.NotificationSystem) {
+      window.NotificationSystem.show('Loading inventory data...', { 
+        type: 'info',
+        playSound: false
+      });
+    }
+    
+    // Load data with timeout to prevent UI freeze
+    console.time('Data loading');
+    setTimeout(async () => {
+      try {
+        let data = [];
+        let usedFallback = false;
+        let fallbackSource = '';
+        
+        // Check SQLite database status
+        let dbStatus = { initialized: false };
+        if (window.electronAPI && typeof window.electronAPI.getDatabaseStatus === 'function') {
+          try {
+            dbStatus = await window.electronAPI.getDatabaseStatus();
+            isDbInitialized = dbStatus.initialized;
+            console.log('SQLite database status:', dbStatus);
+          } catch (statusError) {
+            console.error('Error checking database status:', statusError);
+          }
+        }
+        
+        // Try to get data from SQLite via electronAPI
+        if (window.electronAPI && typeof window.electronAPI.getInventory === 'function') {
+          try {
+            console.log('Loading inventory from electronAPI...');
+            data = await window.electronAPI.getInventory();
+            console.log('Successfully loaded inventory data from electronAPI', data);
+            
+            // Update local database with the latest data for offline use
+            if (window.LocalDatabase) {
+              window.LocalDatabase.setInventory(data);
+              window.LocalDatabase.setLastSync(new Date().toISOString());
+              console.log('Updated local database with latest inventory data');
+            }
+          } catch (apiError) {
+            console.error('Error loading from electronAPI:', apiError);
+            // Will try fallback sources below
+            usedFallback = true;
+          }
+        }
+        
+        // Ensure data is an array
+        if (!data || !Array.isArray(data)) {
+          console.warn('Invalid data received, using empty array');
+          data = [];
+        }
+        
+        // Update the global inventoryData array
+        inventoryData = data;
+        
+        // Also update the window.inventoryData reference for sorting functionality
+        window.inventoryData = inventoryData;
+        
+        // Sync global inventory data
+        syncGlobalInventoryData();
+        
+        console.timeEnd('Data loading');
+        
+        // Render the inventory table
+        renderInventoryTable(data);
+        
+        // Check for low stock items
+        checkLowStockItems(data);
+        
+        // Apply table header styles
+        setTimeout(applyTableHeaderStyles, 100);
+        
+        // Show success notification
+          if (window.NotificationSystem) {
+          if (usedFallback) {
+            window.NotificationSystem.show(`Loaded ${data.length} items from ${fallbackSource}`, { 
+              type: 'warning',
+              title: 'Using Fallback Data'
+            });
+          } else {
+            window.NotificationSystem.show(`Loaded ${data.length} inventory items`, { 
+              type: 'success',
+              playSound: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading inventory data:', error);
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Error loading inventory data: ' + error.message, { 
+            type: 'error'
+          });
+        }
+      }
+    }, 10);
+  } catch (timeoutError) {
+    console.error('Error in loadInventoryData timeout:', timeoutError);
+  }
+}
+
+// Populate product types dropdown based on selected category
+function populateProductTypes() {
+  console.log('🔧 Setting up product type dropdowns with enhanced logic');
+  
+  // Get all the necessary elements
+  const categorySelect = document.getElementById('item-category');
+  const typeSelect = document.getElementById('item-type');
+  const customTypeContainer = document.getElementById('custom-type-container');
+  const filterTypeSelect = document.getElementById('filter-type');
+  
+  // Also get edit form elements
+  const editCategorySelect = document.getElementById('edit-item-category');
+  const editTypeSelect = document.getElementById('edit-item-type');
+  const editCustomTypeContainer = document.getElementById('edit-custom-type-container');
+  
+  if (!categorySelect || !typeSelect) {
+    console.error('❌ Category or type select elements not found');
+    return;
+  }
+  
+  // Populate filter dropdown with all product types (if it exists)
+  if (filterTypeSelect) {
+    let allTypesForFilter = [];
+    Object.values(productTypes).forEach(types => {
+      allTypesForFilter = [...allTypesForFilter, ...types];
+    });
+    
+    // Sort and remove duplicates
+    allTypesForFilter = [...new Set(allTypesForFilter)].sort();
+    
+    // Clear existing options first
+    filterTypeSelect.innerHTML = '<option value="">All Types</option>';
+    
+    // Add options
+    allTypesForFilter.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type;
+      option.textContent = type;
+      filterTypeSelect.appendChild(option);
+    });
+    
+    console.log('✅ Populated filter dropdown with', allTypesForFilter.length, 'types');
+  }
+  
+  // Enhanced function to update type options based on selected category
+  const updateTypeOptions = (categoryElement, typeElement, customContainer, formType = 'unknown') => {
+    if (!categoryElement || !typeElement) {
+      console.warn('⚠️ Missing elements for updateTypeOptions');
+      return;
+    }
+    
+    // Clear previous options completely
+    typeElement.innerHTML = '<option value="">Select Product Type</option>';
+    
+    const category = categoryElement.value;
+    console.log(`🔄 Updating ${formType} form - Category changed to:`, category);
+    
+    // Handle custom category
+    if (customContainer && category === 'Custom') {
+      console.log('🎨 Handling custom category');
+      customContainer.style.display = 'block';
+      
+      // Add custom option to type select
+      const option = document.createElement('option');
+      option.value = 'custom';
+      option.textContent = 'Custom Type';
+      typeElement.appendChild(option);
+      typeElement.value = 'custom';
+      
+      // Make custom input required
+      const customInput = customContainer.querySelector('input');
+      if (customInput) {
+        customInput.required = true;
+      }
+      
+      return;
+    } else {
+      // Hide custom type input if it exists
+      if (customContainer) {
+        customContainer.style.display = 'none';
+        const customInput = customContainer.querySelector('input');
+        if (customInput) {
+          customInput.required = false;
+          customInput.value = '';
+        }
+      }
+    }
+    
+    // Add options based on selected category
+    if (category && productTypes[category]) {
+      console.log(`📋 Found ${productTypes[category].length} product types for category: ${category}`);
+      
+      // Create a fresh array to avoid reference issues
+      const typesForCategory = [...productTypes[category]];
+      
+      typesForCategory.forEach((type, index) => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        typeElement.appendChild(option);
+        console.log(`  ${index + 1}. Added: ${type}`);
+      });
+      
+      console.log(`✅ Successfully added ${typesForCategory.length} options to ${formType} form type dropdown`);
+    } else if (category) {
+      console.warn(`⚠️ No product types found for category: ${category}`);
+      console.log('Available categories:', Object.keys(productTypes));
+    }
+  };
+  
+  // Remove any existing event listeners to prevent duplicates
+  const removeExistingListeners = (element) => {
+    if (element && element._categoryChangeListener) {
+      element.removeEventListener('change', element._categoryChangeListener);
+      delete element._categoryChangeListener;
+    }
+  };
+  
+  // Set up event listener for add form category select
+  if (categorySelect) {
+    console.log('🔧 Setting up add form category listener');
+    
+    // Remove existing listener if any
+    removeExistingListeners(categorySelect);
+    
+    // Create new listener function
+    const addFormListener = () => {
+      console.log('🔄 Add form category changed');
+      updateTypeOptions(categorySelect, typeSelect, customTypeContainer, 'add');
+    };
+    
+    // Store reference and add listener
+    categorySelect._categoryChangeListener = addFormListener;
+    categorySelect.addEventListener('change', addFormListener);
+    
+    // Initial setup - force update even if no value is selected
+    setTimeout(() => {
+      updateTypeOptions(categorySelect, typeSelect, customTypeContainer, 'add');
+    }, 100);
+  }
+  
+  // Set up event listener for edit form category select
+  if (editCategorySelect && editTypeSelect) {
+    console.log('🔧 Setting up edit form category listener');
+    
+    // Remove existing listener if any
+    removeExistingListeners(editCategorySelect);
+    
+    // Create new listener function
+    const editFormListener = () => {
+      console.log('🔄 Edit form category changed');
+      updateTypeOptions(editCategorySelect, editTypeSelect, editCustomTypeContainer, 'edit');
+    };
+    
+    // Store reference and add listener
+    editCategorySelect._categoryChangeListener = editFormListener;
+    editCategorySelect.addEventListener('change', editFormListener);
+    
+    // Initial setup - force update even if no value is selected
+    setTimeout(() => {
+      updateTypeOptions(editCategorySelect, editTypeSelect, editCustomTypeContainer, 'edit');
+    }, 100);
+  }
+  
+  console.log('✅ Product type dropdown setup completed');
+}
+
+
+// Render inventory table with data
+function renderInventoryTable(data) {
+  const tableBody = document.getElementById('inventory-table');
+  const itemCount = document.getElementById('item-count');
+  
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="12" class="text-center">
+          <i class="fas fa-info-circle me-2"></i>
+          No inventory items found. Add your first item to get started.
+        </td>
+      </tr>
+    `;
+    itemCount.textContent = '0 items';
+    return;
+  }
+  
+  // Update the global filtered inventory for sorting functionality
+  if (data !== inventoryData) {
+    window.filteredInventory = data;
+  }
+  
+  // Batch render for performance
+  const batchSize = 100;
+  const totalItems = data.length;
+  let renderedCount = 0;
+  
+  function renderBatch(startIndex) {
+    let html = '';
+    const endIndex = Math.min(startIndex + batchSize, totalItems);
+    
+    for (let i = startIndex; i < endIndex; i++) {
+      const item = data[i];
+      const stockStatus = getStockStatus(item.quantity, item.alertThreshold || 10);
+      
+      // Format ID for display (shortened)
+      const displayId = item.id?.substring(0, 8) + '...' || '';
+      
+      // Ensure brand and dimension are properly displayed
+      const brandDisplay = item.brand || '';
+      const dimensionDisplay = item.dimension || item.dimensions || '';
+      
+      // Get color with fallback
+      const colorDisplay = item.color || 'N/A';
+      
+      // Get buying price with fallbacks
+      const buyingPrice = item.buyingPrice || item.buying_price || item.cost_price || 0;
+      
+      // Add appropriate row class based on stock status
+      let rowClass = '';
+      const isOutOfStock = item.quantity <= 0;
+      const isLowStock = item.quantity <= (item.alertThreshold || 10) && item.quantity > 0;
+      const isGoodStock = item.quantity > (item.alertThreshold || 10);
+      
+      if (isOutOfStock) {
+        rowClass = 'out-of-stock-row';
+      } else if (isLowStock) {
+        rowClass = 'low-stock-row';
+      } else if (isGoodStock) {
+        rowClass = 'good-stock-row';
+      }
+      
+      html += `
+        <tr data-id="${item.id}" class="${rowClass}">
+          <td>${displayId}</td>
+          <td>${item.category || ''}</td>
+          <td>${item.type || ''}</td>
+          <td>${item.description || ''}</td>
+          <td>${brandDisplay}</td>
+          <td>${dimensionDisplay}</td>
+          <td>${colorDisplay}</td>
+          <td class="quantity-cell ${isOutOfStock ? 'out-of-stock-qty' : (isLowStock ? 'low-stock-qty' : 'good-stock-qty')}">${item.quantity}</td>
+          <td>TZsh ${buyingPrice.toFixed(2)}</td>
+          <td>TZsh ${item.price?.toFixed(2) || '0.00'}</td>
+          <td><span class="status-badge ${stockStatus.class}">${stockStatus.text}</span></td>
+          <td class="actions">
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-outline-primary edit-btn" title="Edit Item">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete Item">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+      renderedCount++;
+    }
+    
+    // Append to table or replace content
+    if (startIndex === 0) {
+      tableBody.innerHTML = html;
+    } else {
+      tableBody.insertAdjacentHTML('beforeend', html);
+    }
+    
+    // If more batches to render, schedule next batch
+    if (renderedCount < totalItems) {
+      setTimeout(() => renderBatch(renderedCount), 10);
+    }
+    
+    // Update item count
+    itemCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+  }
+  
+  // Start rendering batches
+  renderBatch(0);
+  
+  // Add event listeners to the newly created buttons
+  setTimeout(addTableEventListeners, 100);
+  
+  // Apply enhanced stock level styling
+  setTimeout(enhanceStockVisualIndicators, 120);
+}
+
+// Get stock status based on quantity and threshold
+function getStockStatus(quantity, threshold) {
+  if (quantity <= 0) {
+    return { text: 'OUT OF STOCK', class: 'status-danger' };
+  } else if (quantity <= threshold) {
+    return { text: 'LOW STOCK ⚠️', class: 'status-warning' };
+  } else {
+    return { text: 'In Stock', class: 'status-success' };
+  }
+}
+
+// Set up event listeners for the inventory interface
+function setupEventListeners() {
+  console.log('Setting up inventory event listeners');
+  
+  // Add item form submission
+  const addItemForm = document.getElementById('add-item-form');
+  if (addItemForm) {
+    if (window.InventoryHandlers && window.InventoryHandlers.handleAddItem) {
+      addItemForm.addEventListener('submit', window.InventoryHandlers.handleAddItem);
+    } else {
+      addItemForm.addEventListener('submit', handleAddItem);
+    }
+  }
+  
+  // Add blinking effect enhancement
+  enhanceLowStockVisualIndicators();
+  
+  // Edit item form submission
+  const editItemForm = document.getElementById('edit-item-form');
+  if (editItemForm) {
+    if (window.InventoryHandlers && window.InventoryHandlers.handleUpdateItem) {
+      editItemForm.addEventListener('submit', window.InventoryHandlers.handleUpdateItem);
+    } else {
+      editItemForm.addEventListener('submit', handleEditItem);
+    }
+  }
+  
+  // Search input
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', filterInventory);
+  }
+  
+  // Filter dropdown
+  const filterType = document.getElementById('filter-type');
+  if (filterType) {
+    filterType.addEventListener('change', filterInventory);
+  }
+  
+  // Refresh button
+  const refreshBtn = document.getElementById('refresh-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => refreshInventoryData(true));
+  }
+  
+  // Confirm delete button in delete modal
+  const confirmDeleteBtn = document.getElementById('confirm-delete');
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', async () => {
+      try {
+        // Get the item ID to delete
+        const itemId = document.getElementById('delete-item-id').value;
+        if (!itemId) {
+          console.error('No item ID found in delete modal');
+          return;
+        }
+        
+        console.log('Attempting to delete item with ID:', itemId);
+        
+        // Disable the button to prevent multiple clicks
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+        
+        // Show processing notification
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Deleting item...', { 
+            type: 'info',
+            playSound: false
+          });
+        }
+        
+        // Call the API to delete the item
+        if (window.electronAPI && typeof window.electronAPI.deleteInventoryItem === 'function') {
+          try {
+            const result = await window.electronAPI.deleteInventoryItem(itemId);
+            console.log('Delete result:', result);
+            
+            // Remove item from local data
+            inventoryData = inventoryData.filter(item => item.id !== itemId);
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteItemModal'));
+            if (modal) modal.hide();
+            
+            // Re-render the table
+            renderInventoryTable(inventoryData);
+            
+            // Show success notification
+            if (window.NotificationSystem) {
+              window.NotificationSystem.show('Item deleted successfully', { 
+                type: 'success',
+                title: 'Item Deleted'
+              });
+            } else {
+              showNotification('Item deleted successfully', 'success');
+            }
+          } catch (apiError) {
+            console.error('API error when deleting item:', apiError);
+            throw new Error(`Failed to delete item: ${apiError.message || 'API error'}`);
+          }
+        } else {
+          throw new Error('Delete inventory item function not available');
+        }
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Error deleting item: ' + (error.message || 'Unknown error'), { 
+            type: 'error',
+            title: 'Delete Failed'
+          });
+        } else {
+          showNotification('Error deleting item', 'error');
+        }
+      } finally {
+        // Re-enable the button
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = 'Delete';
+      }
+    });
+  }
+  
+  // Add table event listeners (for edit and delete buttons)
+  addTableEventListeners();
+}
+
+// Enhance low stock visual indicators for better visibility
+function enhanceLowStockVisualIndicators() {
+  // Add a style element for dynamic styles if needed
+  const styleEl = document.createElement('style');
+  styleEl.id = 'dynamic-inventory-styles';
+  document.head.appendChild(styleEl);
+  
+  // Add additional blinking effect to the status badges
+  styleEl.textContent = `
+    .low-stock-blink .status-warning {
+      box-shadow: 0 0 8px rgba(220, 53, 69, 0.8);
+    }
+  `;
+  
+  // Set up interval to periodically check for low stock indicators
+  setInterval(() => {
+    // Find all low stock rows and ensure they have proper styling
+    const lowStockRows = document.querySelectorAll('.low-stock-blink');
+    lowStockRows.forEach(row => {
+      // Enhance the visual effects
+      const statusBadge = row.querySelector('.status-badge');
+      if (statusBadge) {
+        statusBadge.style.fontWeight = 'bold';
+      }
+      
+      // Make sure the row has high visibility
+      if (!row.hasAttribute('data-enhanced')) {
+        row.setAttribute('data-enhanced', 'true');
+        
+        // Apply additional visual enhancements if needed
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+          cell.style.fontWeight = 'bold';
+        });
+      }
+    });
+  }, 2000); // Check every 2 seconds
+}
+
+// Enhanced function to apply advanced stock level indicators
+function enhanceStockVisualIndicators() {
+  // Create or update the dynamic styles for stock levels
+  let styleEl = document.getElementById('stock-level-styles');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'stock-level-styles';
+    document.head.appendChild(styleEl);
+  }
+  
+  // Set up sophisticated styles for stock level indicators
+  styleEl.textContent = `
+    /* Out of stock styles - Red alert */
+    tr.out-of-stock-row {
+      background-color: rgba(255, 0, 0, 0.08) !important;
+      position: relative;
+      animation: pulse-red 2s infinite;
+    }
+    
+    tr.out-of-stock-row:hover {
+      background-color: rgba(255, 0, 0, 0.15) !important;
+    }
+    
+    .out-of-stock-qty {
+      font-weight: bold !important;
+      color: #dc3545 !important;
+    }
+    
+    @keyframes pulse-red {
+      0% { background-color: rgba(255, 0, 0, 0.08); }
+      50% { background-color: rgba(255, 0, 0, 0.15); }
+      100% { background-color: rgba(255, 0, 0, 0.08); }
+    }
+    
+    /* Low stock styles - Yellow warning */
+    tr.low-stock-row {
+      background-color: rgba(255, 193, 7, 0.08) !important;
+    }
+    
+    tr.low-stock-row:hover {
+      background-color: rgba(255, 193, 7, 0.15) !important;
+    }
+    
+    .low-stock-qty {
+      font-weight: bold !important;
+      color: #fd7e14 !important;
+    }
+    
+    /* Good stock styles - Green confidence */
+    tr.good-stock-row {
+      background-color: rgba(40, 167, 69, 0.04) !important;
+    }
+    
+    tr.good-stock-row:hover {
+      background-color: rgba(40, 167, 69, 0.1) !important;
+    }
+    
+    .good-stock-qty {
+      color: #28a745 !important;
+    }
+    
+    /* Enhanced status badges */
+    .status-badge.status-danger {
+      background-color: #dc3545 !important;
+      box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+      animation: flash-badge 1.5s infinite;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    
+    .status-badge.status-warning {
+      background-color: #fd7e14 !important;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #dc3545;
+    }
+    
+    .status-badge.status-success {
+      background-color: #28a745 !important;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    
+    @keyframes flash-badge {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+  `;
+  
+  // Apply individual styling to rows
+  const outOfStockRows = document.querySelectorAll('tr.out-of-stock-row');
+  outOfStockRows.forEach(row => {
+    if (!row.hasAttribute('data-enhanced')) {
+      row.setAttribute('data-enhanced', 'true');
+      
+      // Add a subtle left border to make it even more noticeable
+      row.style.borderLeft = '3px solid #dc3545';
+      
+      // Make the text bold for better visibility
+      const cells = row.querySelectorAll('td');
+      cells.forEach(cell => {
+        if (!cell.classList.contains('actions')) {
+          cell.style.fontWeight = '500';
+        }
+      });
+      
+      // Enhance status badge with icon
+      const statusBadge = row.querySelector('.status-badge');
+      if (statusBadge && statusBadge.classList.contains('status-danger')) {
+        statusBadge.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> OUT OF STOCK';
+      }
+    }
+  });
+  
+  // Style low stock rows
+  const lowStockRows = document.querySelectorAll('tr.low-stock-row');
+  lowStockRows.forEach(row => {
+    if (!row.hasAttribute('data-enhanced')) {
+      row.setAttribute('data-enhanced', 'true');
+      
+      // Add a subtle left border
+      row.style.borderLeft = '3px solid #fd7e14';
+      
+      // Enhance status badge with icon
+      const statusBadge = row.querySelector('.status-badge');
+      if (statusBadge && statusBadge.classList.contains('status-warning')) {
+        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> LOW STOCK';
+      }
+    }
+  });
+  
+  // Apply subtle enhancement to good stock rows
+  const goodStockRows = document.querySelectorAll('tr.good-stock-row');
+  goodStockRows.forEach(row => {
+    if (!row.hasAttribute('data-enhanced')) {
+      row.setAttribute('data-enhanced', 'true');
+      
+      // Add a subtle left border
+      row.style.borderLeft = '3px solid #28a745';
+      
+      // Enhance status badge with icon
+      const statusBadge = row.querySelector('.status-badge');
+      if (statusBadge && statusBadge.classList.contains('status-success')) {
+        statusBadge.innerHTML = '<i class="fas fa-check-circle me-1"></i> In Stock';
+      }
+    }
+  });
+}
+
+// Add event listeners to table elements
+function addTableEventListeners() {
+  // Add event listeners to edit buttons
+  document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+      const row = event.target.closest('tr');
+      const itemId = row.dataset.id;
+      
+      // Find the item in our data
+      const itemToEdit = inventoryData.find(item => item.id === itemId);
+      if (itemToEdit) {
+        if (window.StockAdjustment && typeof window.StockAdjustment.showEditModal === 'function') {
+          window.StockAdjustment.showEditModal(itemToEdit);
+        } else {
+          showEditModal(itemToEdit);
+        }
+      }
+    });
+  });
+  
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+      // Prevent event bubbling
+      event.stopPropagation();
+      
+      const row = event.target.closest('tr');
+      const itemId = row.dataset.id;
+      
+      // Find the item in our data
+      const itemToDelete = inventoryData.find(item => item.id === itemId);
+      
+      if (itemToDelete) {
+        // Use the modal dialog instead of browser's built-in confirm
+        // Set item info in the delete modal
+        document.getElementById('delete-item-id').value = itemId;
+        document.getElementById('delete-item-name').textContent = `${itemToDelete.type || ''} - ${itemToDelete.description || ''}`;
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
+        modal.show();
+      }
+    });
+  });
+}
+
+// Filter inventory based on search term and filter
+function filterInventory() {
+  const searchTerm = document.getElementById('search-input').value.toLowerCase();
+  const filterType = document.getElementById('filter-type').value;
+  
+  // Apply filters
+  window.filteredInventory = inventoryData.filter(item => {
+    const matchesSearch = 
+      item.description?.toLowerCase().includes(searchTerm) || 
+      item.type?.toLowerCase().includes(searchTerm) ||
+      item.brand?.toLowerCase().includes(searchTerm) ||
+      item.id?.toString().includes(searchTerm);
+    
+    const matchesType = !filterType || item.type === filterType;
+    
+    return matchesSearch && matchesType;
+  });
+  
+  // Sync the filtered inventory with local variable
+  filteredInventory = window.filteredInventory;
+  
+  // Render filtered data
+  renderInventoryTable(window.filteredInventory);
+}
+
+// Handle adding a new item
+async function handleAddItem(event) {
+  event.preventDefault();
+  
+  try {
+    // Get form values with optional chaining and default values to avoid null reference errors
+    const category = document.getElementById('item-category')?.value || '';
+    const typeSelect = document.getElementById('item-type')?.value || '';
+    const customType = document.getElementById('custom-type')?.value || '';
+    const description = document.getElementById('item-description')?.value || '';
+    const brand = document.getElementById('item-brand')?.value || '';
+    const dimension = document.getElementById('item-dimension')?.value || '';
+    const color = document.getElementById('item-color')?.value || '';
+    const unit = document.getElementById('item-unit')?.value || 'pieces';
+    const sku = document.getElementById('item-sku')?.value || '';
+    const quantityValue = document.getElementById('item-quantity')?.value || '0';
+    const buyingPriceValue = document.getElementById('item-buying-price')?.value || '0';
+    const sellingPriceValue = document.getElementById('item-price')?.value || '0';
+    const alertValue = document.getElementById('item-alert')?.value || '10';
+    const notes = document.getElementById('item-notes')?.value || '';
+    
+    // Validate required fields
+    const validationErrors = [];
+    
+    if (!category) validationErrors.push("Category is required");
+    
+    // Validate type based on category
+    let type = typeSelect;
+    if (category === 'Custom') {
+      if (!customType) validationErrors.push("Custom type is required");
+      type = customType;
+    } else {
+      if (!typeSelect) validationErrors.push("Product type is required");
+    }
+    
+    if (!description) validationErrors.push("Description is required");
+    if (!quantityValue) validationErrors.push("Quantity is required");
+    if (!buyingPriceValue) validationErrors.push("Buying price is required");
+    if (!sellingPriceValue) validationErrors.push("Selling price is required");
+    
+    // Validate numeric fields
+    if (quantityValue && isNaN(parseInt(quantityValue))) {
+      validationErrors.push("Quantity must be a number");
+    }
+    
+    if (buyingPriceValue && isNaN(parseFloat(buyingPriceValue))) {
+      validationErrors.push("Buying price must be a number");
+    }
+    
+    if (sellingPriceValue && isNaN(parseFloat(sellingPriceValue))) {
+      validationErrors.push("Selling price must be a number");
+    }
+    
+    if (alertValue && isNaN(parseInt(alertValue))) {
+      validationErrors.push("Alert threshold must be a number");
+    }
+    
+    // Check if buying price is greater than selling price
+    const buyingPrice = parseFloat(buyingPriceValue);
+    const sellingPrice = parseFloat(sellingPriceValue);
+    
+    if (buyingPrice > sellingPrice) {
+      validationErrors.push("Warning: Buying price is greater than selling price. This item will be sold at a loss.");
+    }
+    
+    if (validationErrors.length > 0) {
+      // Show validation errors
+      const errorMessage = `Please correct the following issues:\n${validationErrors.join('\n')}`;
+      showNotification(errorMessage, 'error');
+      return;
+    }
+    
+    // Create item object
+    const newItem = {
+      category,
+      type,
+      description,
+      brand,
+      dimension,
+      color,
+      unit,
+      sku,
+      quantity: parseInt(quantityValue),
+      buyingPrice: parseFloat(buyingPriceValue),
+      price: parseFloat(sellingPriceValue),
+      alertThreshold: parseInt(alertValue),
+      notes,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    console.log('Adding new item:', newItem);
+    
+    // Save to database
+    if (window.electronAPI && typeof window.electronAPI.addInventoryItem === 'function') {
+      const result = await window.electronAPI.addInventoryItem(newItem);
+      console.log('Add result:', result);
+      
+      // Close modal
+      const addModal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
+      if (addModal) addModal.hide();
+      
+      // Show success notification
+      showNotification('Item added successfully!', 'success');
+      
+      // Refresh inventory data
+      await refreshInventoryData(false);
+    } else {
+      // Fallback to local database
+      if (window.LocalDatabase) {
+        const result = window.LocalDatabase.addInventoryItem(newItem);
+        console.log('Add result (local):', result);
+        
+        // Add to local inventory data array
+        inventoryData.push(result);
+        renderInventoryTable(inventoryData);
+        
+        // Close modal
+        const addModal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
+        if (addModal) addModal.hide();
+        
+        // Show success notification
+        showNotification('Item added to local database successfully!', 'success');
+      } else {
+        throw new Error('No method available to add inventory item');
+      }
+    }
+    
+    // Reset form
+    const form = document.getElementById('add-item-form');
+    if (form) form.reset();
+  } catch (error) {
+    console.error('Error adding item:', error);
+    showNotification('An error occurred while adding the item: ' + error.message, 'error');
+  }
+}
+
+// Handle editing an item
+async function handleEditItem(event) {
+  event.preventDefault();
+  
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  // Get the original item data for comparison
+  const itemId = formData.get('id');
+  const originalItem = inventoryData.find(item => item.id === itemId);
+  
+  if (!originalItem) {
+    console.error('Original item not found for editing', itemId);
+    if (window.NotificationSystem) {
+      window.NotificationSystem.show('Error finding item to edit', { type: 'error' });
+    }
+      return;
+    }
+    
+  // Prepare the updated item object, tracking what's changed
+  const updatedItem = {
+    id: itemId,
+    description: formData.get('description'),
+    category: formData.get('category'),
+    type: formData.get('type'),
+    brand: formData.get('brand'),
+    dimensions: formData.get('dimensions') || formData.get('dimension') || '',
+    dimension: formData.get('dimensions') || formData.get('dimension') || '',
+    color: formData.get('color'),
+    quantity: parseInt(formData.get('quantity'), 10) || 0,
+    buyingPrice: parseFloat(formData.get('buyingPrice')) || 0,
+    price: parseFloat(formData.get('price')) || 0,
+    alertThreshold: parseInt(formData.get('alertThreshold'), 10) || 10,
+    updatedBy: 'admin', // Can be dynamically set based on logged-in user
+    updatedAt: new Date().toISOString()
+  };
+  
+  // Track what fields were changed
+  const changes = getItemChanges(originalItem, updatedItem);
+  
+  try {
+    // Show loading spinner in the button
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+    
+    // Call the API to update the item
+    let result;
+    if (window.electronAPI && typeof window.electronAPI.updateInventoryItem === 'function') {
+      result = await window.electronAPI.updateInventoryItem(updatedItem);
+      } else {
+      // Fallback for when electronAPI is not available
+      console.warn('electronAPI.updateInventoryItem not available, using mock API');
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
+      
+      // Update the item in our local data
+      const index = inventoryData.findIndex(item => item.id === updatedItem.id);
+      if (index !== -1) {
+        inventoryData[index] = updatedItem;
+      }
+      
+      result = { success: true, item: updatedItem };
+    }
+    
+    // Reset the button state
+    submitButton.disabled = false;
+    submitButton.innerHTML = originalButtonText;
+    
+    if (result && (result.success || result.item)) {
+      // Close the modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('editItemModal'));
+      modal.hide();
+      
+      // Format changes for notification
+      const changesSummary = formatChangesForNotification(changes);
+    
+      // Show success notification with changes
+      if (window.NotificationSystem) {
+        if (Object.keys(changes).length > 0) {
+          window.NotificationSystem.show(`Item updated: ${updatedItem.description}<br>${changesSummary}`, { 
+            type: 'success',
+            title: 'Item Updated',
+            isHTML: true,
+            duration: 8000 // Show longer for detailed changes
+          });
+        } else {
+          window.NotificationSystem.show(`Item updated: ${updatedItem.description}`, { 
+            type: 'success',
+            title: 'Item Updated'
+          });
+        }
+      }
+      
+      // Refresh the table
+      renderInventoryTable(inventoryData);
+      
+      // Check for low stock alert
+      if (updatedItem.quantity <= updatedItem.alertThreshold) {
+        checkLowStockItems([updatedItem]);
+      }
+    } else {
+      throw new Error(result?.error || 'Failed to update item');
+    }
+  } catch (error) {
+    console.error('Error updating item:', error);
+    
+    // Show error notification
+    if (window.NotificationSystem) {
+      window.NotificationSystem.show(`Error updating item: ${error.message}`, { 
+        type: 'error',
+        title: 'Update Failed'
+      });
+    }
+  }
+}
+
+/**
+ * Compare original and updated items to find changes
+ * @param {Object} original - Original item
+ * @param {Object} updated - Updated item
+ * @returns {Object} Object containing the changes with before and after values
+ */
+function getItemChanges(original, updated) {
+  const changes = {};
+  
+  // Define display names for fields
+  const fieldDisplayNames = {
+    description: 'Description',
+    category: 'Category',
+    type: 'Type',
+    brand: 'Brand',
+    dimensions: 'Dimensions',
+    dimension: 'Dimensions',
+    color: 'Color',
+    quantity: 'Quantity',
+    buyingPrice: 'Buying Price',
+    price: 'Selling Price',
+    alertThreshold: 'Alert Threshold'
+  };
+  
+  // Check each property and record changes
+  for (const key in fieldDisplayNames) {
+    // Skip dimension/dimensions to avoid duplicates
+    if ((key === 'dimension' && changes.dimensions) || 
+        (key === 'dimensions' && changes.dimension)) {
+      continue;
+    }
+    
+    if (original[key] !== updated[key]) {
+      // Special handling for numeric fields
+      if (['quantity', 'buyingPrice', 'price', 'alertThreshold'].includes(key)) {
+        const originalValue = parseFloat(original[key]) || 0;
+        const updatedValue = parseFloat(updated[key]) || 0;
+        
+        if (originalValue !== updatedValue) {
+          changes[key] = {
+            displayName: fieldDisplayNames[key],
+            before: originalValue,
+            after: updatedValue
+          };
+        }
+      } 
+      // Regular string comparison
+      else if (String(original[key] || '') !== String(updated[key] || '')) {
+        changes[key] = {
+          displayName: fieldDisplayNames[key],
+          before: original[key] || '',
+          after: updated[key] || ''
+        };
+      }
+    }
+  }
+  
+  return changes;
+}
+
+/**
+ * Format changes for display in notification
+ * @param {Object} changes - Object containing changes
+ * @returns {string} Formatted HTML string of changes
+ */
+function formatChangesForNotification(changes) {
+  if (Object.keys(changes).length === 0) {
+    return 'No changes made';
+  }
+  
+  let result = '<ul class="mb-0 ps-3">';
+  
+  // Process quantity change first if it exists
+  if (changes.quantity) {
+    const diff = changes.quantity.after - changes.quantity.before;
+    const diffText = diff > 0 ? `+${diff}` : diff;
+    
+    result += `<li><strong>${changes.quantity.displayName}:</strong> ${changes.quantity.before} → ${changes.quantity.after} (${diffText})</li>`;
+    delete changes.quantity;
+  }
+  
+  // Process price changes next
+  for (const key of ['price', 'buyingPrice']) {
+    if (changes[key]) {
+      result += `<li><strong>${changes[key].displayName}:</strong> ${changes[key].before.toFixed(2)} → ${changes[key].after.toFixed(2)}</li>`;
+      delete changes[key];
+    }
+  }
+  
+  // Process remaining changes
+  for (const key in changes) {
+    const change = changes[key];
+    result += `<li><strong>${change.displayName}:</strong> ${change.before} → ${change.after}</li>`;
+  }
+  
+  result += '</ul>';
+  return result;
+}
+
+// Handle deleting an item
+async function handleDeleteItem(event) {
+  try {
+    // Get the closest row to the clicked button
+    const row = event.target.closest('tr');
+    if (!row) {
+      console.error('Could not find parent row for delete button');
+      return;
+    }
+    
+    const itemId = row.dataset.id;
+    if (!itemId) {
+      console.error('No item ID found in row data');
+      return;
+    }
+    
+    // Find the item in our data
+    const item = inventoryData.find(item => item.id.toString() === itemId);
+    
+    if (!item) {
+      if (window.NotificationSystem) {
+        window.NotificationSystem.show('Item not found in inventory', { type: 'error' });
+      } else {
+        showNotification('Item not found', 'error');
+      }
+      return;
+    }
+    
+    console.log('Deleting item:', item);
+    
+    // Use the modal dialog instead of browser's built-in confirm
+    // Set item info in the delete modal
+    document.getElementById('delete-item-id').value = itemId;
+    document.getElementById('delete-item-name').textContent = `${item.type || ''} - ${item.description || ''}`;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteItemModal'));
+    modal.show();
+    
+    // The actual deletion will be handled by the event handler for the confirm-delete button
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    if (window.NotificationSystem) {
+      window.NotificationSystem.show('Error deleting item: ' + (error.message || 'Unknown error'), { 
+        type: 'error',
+        title: 'Delete Failed'
+      });
+    } else {
+      showNotification('Error deleting item', 'error');
+    }
+  }
+}
+
+// Check for low stock items and show alert if found
+function checkLowStockItems(items) {
+  if (!items || !items.length) return;
+  
+  // Find low stock items
+  const lowStockItems = items.filter(item => 
+    item.quantity <= (item.alertThreshold || 10) && item.quantity > 0
+  );
+  
+  // Find out of stock items
+  const outOfStockItems = items.filter(item => item.quantity <= 0);
+  
+  // Show low stock notification if any are found
+  if (lowStockItems.length > 0 && window.NotificationSystem) {
+    window.NotificationSystem.showLowStockAlert(lowStockItems);
+  }
+  
+  // Show out of stock notification if any are found
+  if (outOfStockItems.length > 0 && window.NotificationSystem) {
+    let itemsList = '';
+    outOfStockItems.forEach(item => {
+      const itemType = item.type || item.category || 'Uncategorized';
+      const dimension = item.dimension || item.size || '';
+      const dimensionInfo = dimension ? ` - ${dimension}` : '';
+      
+      itemsList += `<li><strong style="color: #000000 !important;">${item.description}</strong><span style="color: #000000 !important;">${dimensionInfo} (${itemType})</span></li>`;
+    });
+    
+    const message = `
+      <div class="out-of-stock-alert" style="color: #000000 !important;">
+        <p style="color: #000000 !important;"><strong style="color: #000000 !important;">${outOfStockItems.length} item${outOfStockItems.length > 1 ? 's are' : ' is'} out of stock:</strong></p>
+        <ul class="ps-3" style="color: #000000 !important;">
+          ${itemsList}
+        </ul>
+        <p class="mb-0" style="color: #000000 !important;">Please restock these items immediately.</p>
+      </div>
+    `;
+    
+    window.NotificationSystem.show(message, {
+      type: 'error',
+      title: 'Out of Stock Alert',
+      duration: 8000,
+      isHTML: true
+    });
+  }
+}
+
+// Legacy notification function (for backward compatibility)
+function showNotification(message, type = 'success') {
+  // Use the new notification system if available
+  if (window.NotificationSystem) {
+    return window.NotificationSystem.show(message, { type });
+  }
+  
+  // Otherwise use the old implementation
+  const toast = document.createElement('div');
+  toast.className = `toast align-items-center border-0`;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
+  toast.setAttribute('aria-atomic', 'true');
+  
+  // Get the appropriate background color based on type
+  let bgColor;
+  switch(type) {
+    case 'success': bgColor = '#10b981'; break;
+    case 'error': bgColor = '#ef4444'; break;
+    case 'warning': bgColor = '#f59e0b'; break;
+    case 'info': bgColor = '#3b82f6'; break;
+    default: bgColor = '#3b82f6'; // default to info
+  }
+  
+  toast.innerHTML = `
+    <div class="d-flex" style="background-color: ${bgColor};">
+      <div class="toast-body" style="color: #000000 !important; font-weight: bold;">
+        ${message}
+      </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  `;
+  
+  const toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    document.body.appendChild(container);
+  }
+  
+  document.getElementById('toast-container').appendChild(toast);
+  const bsToast = new bootstrap.Toast(toast);
+  bsToast.show();
+  
+  // Remove toast after it's hidden
+  toast.addEventListener('hidden.bs.toast', () => {
+    toast.remove();
+  });
+  
+  return toast;
+}
+
+// Initialize the inventory system when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Only initialize if not already initialized by dashboard
+  if (!window.inventoryInitialized) {
+    window.inventoryInitialized = true;
+    window.initializeInventory();
+  }
+});
+
+/**
+ * Refresh the inventory data
+ * @param {boolean} showNotification - Whether to show a notification when refreshing
+ * @returns {Promise<Array>} - The refreshed inventory data
+ */
+async function refreshInventoryData(showNotification = true) {
+  try {
+    if (showNotification && window.NotificationSystem) {
+      window.NotificationSystem.show('Refreshing inventory data...', { 
+        type: 'info',
+        playSound: false
+      });
+    }
+    
+    // Load the updated inventory data
+    await loadInventoryData();
+    
+    if (showNotification && window.NotificationSystem) {
+      window.NotificationSystem.show('Inventory data refreshed successfully', { 
+        type: 'success',
+        playSound: false
+      });
+    }
+    
+    return inventoryData;
+  } catch (error) {
+    console.error('Error refreshing inventory data:', error);
+    
+    if (showNotification && window.NotificationSystem) {
+      window.NotificationSystem.show(`Error refreshing data: ${error.message}`, { 
+        type: 'error'
+      });
+    }
+    
+    throw error;
+  }
+}
+
+// Make the function available globally
+window.refreshInventoryData = refreshInventoryData; 
+
+// Update the applyTableHeaderStyles function to be more aggressive
+function applyTableHeaderStyles() {
+  console.log('Applying blue header styles to tables - ENHANCED VERSION');
+  
+  // Target elements by both ID and class
+  const tableSelectors = [
+    '#inventory-table thead',
+    '#sales-table thead',
+    '.blue-header-table thead',
+    '.table thead',
+    'table thead'
+  ];
+  
+  // For each selector, apply styles directly
+  tableSelectors.forEach(selector => {
+    const headers = document.querySelectorAll(selector);
+    
+    headers.forEach(header => {
+      // Apply styles to header element
+      header.style.backgroundColor = '#3b82f6';
+      
+      // Apply styles to all rows in header
+      const headerRows = header.querySelectorAll('tr');
+      headerRows.forEach(row => {
+        row.style.backgroundColor = '#3b82f6';
+        row.style.color = 'white';
+      });
+      
+      // Apply styles to all cells in header
+      const headerCells = header.querySelectorAll('th');
+      headerCells.forEach(cell => {
+        cell.style.backgroundColor = '#3b82f6';
+        cell.style.color = 'white';
+        cell.style.fontWeight = 'bold';
+        cell.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      });
+    });
+  });
+  
+  // Also add CSS class to the head element as a backup method
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    table thead tr, .table thead tr, #inventory-table thead tr, #sales-table thead tr {
+      background-color: #3b82f6 !important;
+      color: white !important;
+    }
+    
+    table thead th, .table thead th, #inventory-table thead th, #sales-table thead th {
+      background-color: #3b82f6 !important;
+      color: white !important;
+      font-weight: bold !important;
+    }
+  `;
+  document.head.appendChild(styleElement);
+}
+
+// Intercept the original renderInventoryTable
+const originalRenderInventoryTable = renderInventoryTable;
+renderInventoryTable = function(...args) {
+  // Call the original function
+  originalRenderInventoryTable.apply(this, args);
+  
+  // Apply table styles after rendering
+  setTimeout(applyTableHeaderStyles, 10);
+};
+
+// Make renderInventoryTable available globally for sorting functionality
+window.renderInventoryTable = renderInventoryTable;
+
+// Call the function when document is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  applyTableHeaderStyles();
+  
+  // Also apply when data is refreshed
+  window.addEventListener('inventory-data-loaded', applyTableHeaderStyles);
+}); 

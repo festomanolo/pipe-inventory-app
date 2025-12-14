@@ -1,0 +1,306 @@
+
+// Global error handler to prevent UI freezes
+window.addEventListener('error', function(event) {
+  console.error('Global error caught:', event.error);
+  
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  
+  if (elements && elements.reportsLoading) {
+    elements.reportsLoading.style.display = 'none';
+  }
+  
+  if (elements && elements.noReportsFound) {
+    elements.noReportsFound.style.display = 'block';
+    elements.noReportsFound.innerHTML = `
+      <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+      <p>Error loading reports. Please try refreshing the page.</p>
+      <p class="small text-danger">Error details: ${error.message || 'Unknown error'}</p>
+    `;
+  }
+}
+  });
+
+  const reportContainer = document.getElementById('current-report-container');
+  if (reportContainer) {
+    observer.observe(reportContainer, { attributes: true, attributeFilter: ['style'] });
+  }
+});
+
+// Ensure all icons are visible by modifying their CSS properties
+function enhanceIconVisibility() {
+  // Select all icon elements
+  const iconElements = document.querySelectorAll('i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"]');
+  
+  // Apply basic visibility styles to each icon, without glowing effects
+  iconElements.forEach(icon => {
+    icon.style.color = '#ffffff';
+    icon.style.opacity = '1';
+  });
+  
+  // Select all SVG elements
+  const svgElements = document.querySelectorAll('svg, svg *');
+  
+  // Apply basic visibility styles to each SVG, without glowing effects
+  svgElements.forEach(svg => {
+    svg.style.fill = '#ffffff';
+  });
+  
+  // Select all chart-related elements
+  const chartElements = document.querySelectorAll('.chart-container, .chart-wrapper, canvas, [class*="chart-"], [id*="chart-"]');
+  
+  // Add global styles to the document
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"] {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+    
+    svg, svg * {
+      fill: #ffffff !important;
+      stroke: #ffffff !important;
+    }
+    
+    .chart-title, .chart-label, .legend-item {
+      color: #ffffff !important;
+      font-weight: bold !important;
+    }
+  `;
+  
+  document.head.appendChild(styleElement);
+  
+  console.log('Enhanced visibility of icons and chart elements (no glow)');
+}
+
+// Call the function when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+  
+  // Call it again after a short delay to catch dynamically created elements
+  setTimeout(enhanceIconVisibility, 1000);
+  setTimeout(enhanceIconVisibility, 2000);
+});
+
+// Also call the function when the window finishes loading
+window.addEventListener('load', function() {
+  console.log('Window loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+});
+
+// Enhance visibility after any AJAX requests complete
+const originalXHR = window.XMLHttpRequest;
+window.XMLHttpRequest = function() {
+  const xhr = new originalXHR();
+  const originalOnLoad = xhr.onload;
+  
+  xhr.onload = function() {
+    if (originalOnLoad) {
+      originalOnLoad.apply(this, arguments);
+    }
+    setTimeout(enhanceIconVisibility, 500);
+  };
+  
+  return xhr;
+}; 
+
+/**
+ * Check if charts are rendering properly and provide fallback if needed
+ */
+function checkChartsRendering() {
+  console.log('Checking if charts are rendering properly');
+  
+  // Wait a bit to ensure charts have had time to render
+  setTimeout(() => {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    const emptyCharts = [];
+    
+    chartContainers.forEach((container, index) => {
+      // Check if the chart has any visible content
+      const canvas = container.querySelector('canvas');
+      if (canvas) {
+        try {
+          const ctx = canvas.getContext('2d');
+          // Only check if canvas has a reasonable size
+          if (canvas.width > 10 && canvas.height > 10) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Check if the canvas is empty (all pixels are transparent or black)
+            let isEmpty = true;
+            let nonTransparentPixels = 0;
+            
+            // Sample pixels (check every 10th pixel to save performance)
+            for (let i = 0; i < data.length; i += 40) {
+              const alpha = data[i + 3]; // Alpha channel
+              // If we have non-transparent pixels
+              if (alpha > 10) {
+                nonTransparentPixels++;
+                // If we have enough non-transparent pixels, consider it non-empty
+                if (nonTransparentPixels > 10) {
+                  isEmpty = false;
+                  break;
+                }
+              }
+            }
+            
+            if (isEmpty) {
+              console.warn(`Chart ${index} appears to be empty`);
+              emptyCharts.push(index);
+            }
+          } else {
+            console.warn(`Chart ${index} has invalid dimensions: ${canvas.width}x${canvas.height}`);
+            emptyCharts.push(index);
+          }
+        } catch (error) {
+          console.error(`Error checking chart ${index}:`, error);
+        }
+      }
+    });
+    
+    // If we have empty charts, try to fix them
+    if (emptyCharts.length > 0) {
+      console.warn(`Found ${emptyCharts.length} empty charts. Attempting to fix...`);
+      
+      // Get the current report
+      const currentReport = getCurrentReport();
+      if (!currentReport) {
+        console.error('No current report found');
+        return;
+      }
+      
+      console.log('Current report:', currentReport);
+      
+      // Check if the report has valid data
+      if (!currentReport.data) {
+        console.error('Report has no data');
+        return;
+      }
+      
+      // Check specifically for sales and profit reports
+      if (currentReport.type === 'sales' || currentReport.type === 'profit') {
+        console.log(`Fixing ${currentReport.type} report charts`);
+        
+        // Ensure the report has valid chart configurations
+        if (!currentReport.charts || !Array.isArray(currentReport.charts)) {
+          console.log('Regenerating chart configurations');
+          currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        }
+        
+        // Add fallback data if needed
+        if (currentReport.type === 'sales') {
+          // Ensure sales data exists
+          if (!currentReport.data.sales || currentReport.data.sales.length === 0) {
+            console.log('Adding fallback sales data');
+            currentReport.data.sales = [
+              { date: new Date().toISOString(), total_amount: 0, id: 'fallback-1' }
+            ];
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.salesByDate || currentReport.data.salesByDate.length === 0) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.salesByDate = [
+              { date: yesterday.toISOString(), total: 0 },
+              { date: today.toISOString(), total: 0 }
+            ];
+          }
+        } else if (currentReport.type === 'profit') {
+          // Ensure profit data exists
+          if (currentReport.data.totalRevenue === undefined) {
+            console.log('Adding fallback profit data');
+            currentReport.data.totalRevenue = 0;
+            currentReport.data.totalCost = 0;
+            currentReport.data.grossProfit = 0;
+            currentReport.data.profitMargin = 0;
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.timeline || !currentReport.data.timeline.labels) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.timeline = {
+              labels: [yesterday.toISOString().split('T')[0], today.toISOString().split('T')[0]],
+              revenue: [0, 0],
+              cost: [0, 0],
+              profit: [0, 0]
+            };
+          }
+          
+          // Ensure product data exists
+          if (!currentReport.data.productProfits || currentReport.data.productProfits.length === 0) {
+            console.log('Adding fallback product data');
+            currentReport.data.productProfits = [
+              {
+                id: 'fallback-1',
+                name: 'No Sales Data',
+                revenue: 0,
+                cost: 0,
+                profit: 0,
+                quantity: 0,
+                margin: 0
+              }
+            ];
+          }
+        }
+        
+        // Regenerate charts with the enhanced data
+        currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        
+        // Force re-render of the charts
+        if (window.VisualReports && typeof window.VisualReports.generateCharts === 'function') {
+          console.log('Re-rendering charts for current report');
+          window.VisualReports.generateCharts(currentReport, 'report-charts-container');
+        }
+      }
+    }
+  }, 1000); // Check after 1 second
+}
+
+/**
+ * Get the current report being displayed
+ * @returns {Object|null} The current report or null
+ */
+function getCurrentReport() {
+  try {
+    // Try to get the report from the global variable or data attribute
+    if (window.currentReport) {
+      return window.currentReport;
+    }
+    
+    // Try to get from data attribute
+    const reportContainer = document.getElementById('report-container');
+    if (reportContainer && reportContainer.dataset.reportId) {
+      const reportId = reportContainer.dataset.reportId;
+      const reportData = reportContainer.dataset.reportData;
+      
+      if (reportData) {
+        try {
+          return JSON.parse(reportData);
+        } catch (e) {
+          console.error('Error parsing report data:', e);
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting current report:', error);
+    return null;
+  }
+}
+/**
+ * Reset the generate button to its default state
+ */
+function resetGenerateButton() {
+  elements.generateReportBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Report';
+  elements.generateReportBtn.disabled = false;
+}

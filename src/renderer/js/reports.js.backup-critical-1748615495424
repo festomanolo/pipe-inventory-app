@@ -1,0 +1,4000 @@
+/**
+ * Reports Module
+ * Handles report generation, display, and export functionality
+ */
+
+// Element selectors
+const elements = {
+  reportTypeSelect: document.getElementById('report-type'),
+  reportPeriodSelect: document.getElementById('report-period'),
+  reportFormatSelect: document.getElementById('report-format'),
+  generateReportBtn: document.getElementById('generate-report-btn'),
+  startDateInput: document.getElementById('start-date'),
+  endDateInput: document.getElementById('end-date'),
+  dateRangeContainer: document.querySelector('.date-range-container'),
+  reportsList: document.getElementById('reports-list'),
+  reportsLoading: document.getElementById('reports-loading'),
+  noReportsFound: document.getElementById('no-reports-found'),
+  currentReportContainer: document.getElementById('current-report-container'),
+  reportMetrics: document.getElementById('report-metrics'),
+  reportChartsContainer: document.getElementById('report-charts-container'),
+  reportDataTable: document.getElementById('report-data-table'),
+  printReportBtn: document.getElementById('print-report-btn'),
+  exportPdfBtn: document.getElementById('export-pdf-btn'),
+  exportCsvBtn: document.getElementById('export-csv-btn'),
+  closeReportBtn: document.getElementById('close-report-btn'),
+  saveReportBtn: document.getElementById('save-report-btn'),
+  searchReports: document.getElementById('search-reports'),
+  searchReportsBtn: document.getElementById('search-reports-btn'),
+  currentReportTitle: document.getElementById('current-report-title')
+};
+
+// Store for report data
+const reportStore = {
+  recentReports: [],
+  currentReport: null,
+  reportFilters: {
+    type: '',
+    period: 'this_month'
+  }
+};
+
+// Initialize on document load
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    
+  try {
+    
+  try {
+    
+  try {
+    
+  initReportsModule();
+  setupEventListeners();
+  loadRecentReports();
+  updateDateFields();
+
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+    }
+  }
+
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+    }
+  }
+
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+    }
+  }
+
+  } catch (error) {
+    console.error('Error initializing reports module:', error);
+    if (elements && elements.reportsLoading) {
+      elements.reportsLoading.style.display = 'none';
+    }
+    if (elements && elements.noReportsFound) {
+      elements.noReportsFound.style.display = 'block';
+      elements.noReportsFound.innerHTML = `
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+        <p>Error loading reports. Please try refreshing the page.</p>
+        <p class="small text-danger">Error details: ${error.message}</p>
+      `;
+    }
+  }
+});
+
+/**
+ * Initialize the reports module
+ */
+function initReportsModule() {
+  console.log('Initializing Reports Module');
+  
+  // Set current date in header
+  const currentDate = document.getElementById('current-date');
+  if (currentDate) {
+    currentDate.textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  
+  // Immediately hide splash screen and show content
+    const splashScreen = document.getElementById('splash-screen');
+    if (splashScreen) {
+      splashScreen.classList.add('splash-hidden');
+  }
+      
+      // Show app container
+      const appContainer = document.getElementById('app-container');
+      if (appContainer) {
+        appContainer.classList.add('app-visible');
+      }
+}
+
+/**
+ * Set up event listeners for the reports page
+ */
+function setupEventListeners() {
+  // Toggle sidebar on mobile
+  const toggleSidebar = document.getElementById('toggleSidebar');
+  if (toggleSidebar) {
+    toggleSidebar.addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('expanded');
+    });
+  }
+  
+  // Period select change
+  if (elements.reportPeriodSelect) {
+    elements.reportPeriodSelect.addEventListener('change', () => {
+      updateDateFields();
+    });
+  }
+  
+  // Report generator form
+  const reportGeneratorForm = document.getElementById('report-generator-form');
+  if (reportGeneratorForm) {
+    reportGeneratorForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      generateReport();
+    });
+  }
+  
+  // Report actions
+  if (elements.printReportBtn) {
+    elements.printReportBtn.addEventListener('click', printReport);
+  }
+  
+  if (elements.exportPdfBtn) {
+    elements.exportPdfBtn.addEventListener('click', exportReportToPdf);
+  }
+  
+  if (elements.exportCsvBtn) {
+    elements.exportCsvBtn.addEventListener('click', exportReportToCsv);
+  }
+  
+  if (elements.closeReportBtn) {
+    elements.closeReportBtn.addEventListener('click', closeReport);
+  }
+  
+  // Save report modal
+  if (elements.saveReportBtn) {
+    elements.saveReportBtn.addEventListener('click', saveReport);
+  }
+  
+  // Search reports
+  if (elements.searchReportsBtn) {
+    elements.searchReportsBtn.addEventListener('click', () => {
+      const searchTerm = elements.searchReports.value.trim();
+      searchReports(searchTerm);
+    });
+  }
+  
+  if (elements.searchReports) {
+    elements.searchReports.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        const searchTerm = elements.searchReports.value.trim();
+        searchReports(searchTerm);
+      }
+    });
+  }
+}
+
+/**
+ * Update date fields based on selected period
+ */
+function updateDateFields() {
+  const period = elements.reportPeriodSelect.value;
+  
+  if (period === 'custom') {
+    elements.dateRangeContainer.style.display = 'flex';
+    
+    // Set default dates to current month
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    elements.startDateInput.value = formatDate(firstDay);
+    elements.endDateInput.value = formatDate(lastDay);
+  } else {
+    elements.dateRangeContainer.style.display = 'none';
+  }
+}
+
+/**
+ * Format a date as YYYY-MM-DD
+ * @param {Date} date - The date to format
+ * @returns {string} Formatted date
+ */
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Load recent reports from database
+ */
+async function loadRecentReports() {
+  try {
+  try {
+    elements.reportsLoading.style.display = 'block';
+    elements.noReportsFound.style.display = 'none';
+    
+    
+    // Get reports from the main process
+    let reports = [];
+    try {
+      reports = await window.electronAPI.getReports();
+    } catch (error) {
+    console.error('Failed to load reports:', error);
+    elements.reportsLoading.style.display = 'none';
+    elements.noReportsFound.style.display = 'block';
+    elements.noReportsFound.innerHTML = `
+      <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+      <p>Failed to load reports. Please try again later.</p>
+      <p class="small text-danger">Error details: ${error.message}</p>
+    `;
+  }
+} catch (error) {
+    console.error('Failed to load reports:', error);
+    elements.reportsLoading.style.display = 'none';
+    elements.noReportsFound.style.display = 'block';
+    elements.noReportsFound.innerHTML = `
+      <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+      <p>Failed to load reports. Please try again later.</p>
+      <p class="small text-danger">Error details: ${error.message}</p>
+    `;
+  }
+} catch (error) {
+    console.error('Failed to load reports:', error);
+    elements.reportsLoading.style.display = 'none';
+    elements.noReportsFound.style.display = 'block';
+    elements.noReportsFound.innerHTML = `
+      <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+      <p>Failed to load reports. Please try again later.</p>
+      <p class="small text-danger">Error details: ${error.message}</p>
+    `;
+  }
+} catch (error) {
+    console.error('Failed to load reports:', error);
+    elements.reportsLoading.style.display = 'none';
+    elements.noReportsFound.style.display = 'block';
+    elements.noReportsFound.innerHTML = `
+      <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+      <p>Failed to load reports. Please try again later.</p>
+      <p class="small text-danger">Error details: ${error.message}</p>
+    `;
+  }
+} catch (apiError) {
+      console.error('Error calling getReports API:', apiError);
+      // Fallback to direct invoke if the API call fails
+      try {
+        reports = await window.electronAPI.invoke('get-reports');
+      } catch (invokeError) {
+        console.error('Error with direct invoke call:', invokeError);
+        throw new Error('Failed to load reports data');
+      }
+    }
+    console.log('Loaded reports from database:', reports);
+    
+    // Process reports - ensure data is parsed
+    const processedReports = reports.map(report => {
+      // Parse data if it's a string
+      if (report.data && typeof report.data === 'string') {
+        try {
+          report.data = JSON.parse(report.data);
+        } catch (e) {
+          console.error(`Error parsing report data for ${report.id}:`, e);
+        }
+      }
+      return report;
+    });
+    
+    reportStore.recentReports = processedReports || [];
+    
+    if (processedReports && processedReports.length > 0) {
+      renderReportsList(processedReports);
+    } else {
+      elements.reportsLoading.style.display = 'none';
+      elements.noReportsFound.style.display = 'block';
+    }
+  } catch (error) {
+    console.error('Error loading reports:', error);
+    showNotification('error', 'Failed to load reports', error.message);
+    elements.reportsLoading.style.display = 'none';
+    elements.noReportsFound.style.display = 'block';
+  }
+}
+
+/**
+ * Render the list of reports
+ * @param {Array} reports - The reports to render
+ */
+function renderReportsList(reports) {
+  elements.reportsLoading.style.display = 'none';
+  
+  if (!reports || reports.length === 0) {
+    elements.noReportsFound.style.display = 'block';
+    return;
+  }
+  
+  elements.noReportsFound.style.display = 'none';
+  elements.reportsList.innerHTML = '';
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  // Reset cursor to default
+  document.body.style.cursor = 'default';
+  
+  // Sort reports by date (newest first)
+  reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+  reports.forEach(report => {
+    const reportCard = document.createElement('div');
+    reportCard.className = 'card dark-card mb-3 report-card';
+    reportCard.dataset.reportId = report.id;
+    
+    // Get appropriate icon class
+    let iconClass = 'inventory-report-icon';
+    if (report.type === 'sales') iconClass = 'sales-report-icon';
+    if (report.type === 'profit') iconClass = 'profit-report-icon';
+    if (report.type === 'customer') iconClass = 'customer-report-icon';
+    if (report.type === 'supplier') iconClass = 'supplier-report-icon';
+    
+    reportCard.innerHTML = `
+      <div class="card-body">
+        <div class="d-flex">
+          <div class="report-icon ${iconClass}">
+            <i class="fas ${getReportIcon(report.type)}"></i>
+          </div>
+          <div class="report-info">
+            <h5 class="report-title">${report.name || getReportTitle(report.type)}</h5>
+            <p class="report-description">${report.description || ''}</p>
+            <p class="report-date">
+              <i class="fas fa-calendar-alt me-1"></i> 
+              ${new Date(report.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn-sm btn-outline-primary view-report-btn" data-report-id="${report.id}">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger delete-report-btn" data-report-id="${report.id}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    elements.reportsList.appendChild(reportCard);
+    
+    // Add click event to view report
+    reportCard.querySelector('.view-report-btn').addEventListener('click', () => {
+      viewReport(report.id);
+    });
+    
+    // Add click event to delete report
+    reportCard.querySelector('.delete-report-btn').addEventListener('click', (event) => {
+      event.stopPropagation();
+      deleteReport(report.id);
+    });
+    
+    // Add click event to entire card
+    reportCard.addEventListener('click', () => {
+      viewReport(report.id);
+    });
+  });
+}
+
+/**
+ * Get the icon for a report type
+ * @param {string} type - The report type
+ * @returns {string} Icon class
+ */
+function getReportIcon(type) {
+  switch (type) {
+    case 'inventory':
+      return 'fa-boxes';
+    case 'sales':
+      return 'fa-shopping-cart';
+    case 'profit':
+      return 'fa-chart-line';
+    case 'customer':
+      return 'fa-users';
+    case 'supplier':
+      return 'fa-truck';
+    default:
+      return 'fa-file-alt';
+  }
+}
+
+/**
+ * Get a title for a report based on its type
+ * @param {string} type - The report type
+ * @returns {string} Report title
+ */
+function getReportTitle(type) {
+  switch (type) {
+    case 'inventory':
+      return 'Inventory Report';
+    case 'sales':
+      return 'Sales Report';
+    case 'profit':
+      return 'Profit & Loss Report';
+    case 'customer':
+      return 'Customer Analysis';
+    case 'supplier':
+      return 'Supplier Analysis';
+    default:
+      return 'Report';
+  }
+}
+
+/**
+ * Generate a new report
+ */
+async function generateReport() {
+  try {
+  try {
+  try {
+  try {
+  try {
+    // Show loading indicator
+    elements.generateReportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating...';
+    elements.generateReportBtn.disabled = true;
+    
+    // Get report parameters
+    const reportType = elements.reportTypeSelect.value;
+    const reportPeriod = elements.reportPeriodSelect.value;
+    const reportFormat = elements.reportFormatSelect.value;
+    
+    // Validate inputs
+    if (!reportType) {
+      showNotification('error', 'Error', 'Please select a report type');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      return;
+    }
+    
+    // Prepare parameters
+    const params = {
+      type: reportType,
+      period: reportPeriod,
+      format: reportFormat
+    };
+    
+    // Add custom date range if selected
+    if (reportPeriod === 'custom') {
+      params.customRange = {
+        startDate: elements.startDateInput.value,
+        endDate: elements.endDateInput.value
+      };
+    }
+    
+    console.log('Generating report with params:', params);
+    
+    // Call the appropriate API based on report type
+    
+    // Set a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Report generation timed out')), 30000)
+    );
+    
+    
+    // Set a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Report generation timed out')), 30000)
+    );
+    
+    
+    // Set a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Report generation timed out')), 30000)
+    );
+    
+    
+    // Set a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Report generation timed out')), 30000)
+    );
+    
+    let reportData;
+    
+    try {
+      // For inventory report, directly get inventory data to ensure we have current data
+      if (reportType === 'inventory') {
+        console.log('Fetching inventory data directly');
+        const inventory = await window.electronAPI.getInventory();
+        console.log('Raw inventory data:', inventory);
+        
+        if (!inventory || inventory.length === 0) {
+          throw new Error('No inventory data found');
+        }
+        
+        // Calculate metrics from inventory data
+        const totalItems = inventory.length;
+        let totalValue = 0;
+        let lowStockItems = 0;
+        const categoriesMap = {};
+        
+        // Process inventory for metrics
+        inventory.forEach(item => {
+          // Ensure numeric values
+          const quantity = Number(item.quantity) || 0;
+          const price = Number(item.price) || 0;
+          const threshold = Number(item.alertThreshold) || 10;
+          
+          // Calculate total value (using price, not cost)
+          totalValue += quantity * price;
+          
+          // Check for low stock
+          if (quantity <= threshold) {
+            lowStockItems++;
+          }
+          
+          // Group by category
+          const category = item.category || 'Uncategorized';
+          if (!categoriesMap[category]) {
+            categoriesMap[category] = {
+              name: category,
+              count: 0,
+              value: 0
+            };
+          }
+          
+          categoriesMap[category].count++;
+          categoriesMap[category].value += quantity * price;
+        });
+        
+        // Convert categories map to array
+        const categories = Object.values(categoriesMap);
+        
+        // Create report data object
+        reportData = {
+          totalItems,
+          totalValue,
+          lowStockItems,
+          categories,
+          items: inventory
+        };
+        
+        console.log('Generated inventory report data:', reportData);
+      } else if (reportType === 'sales') {
+        // Get real sales data
+        console.log('Fetching real sales data from database');
+        
+        // Calculate date range based on period
+        let startDate, endDate;
+        const now = new Date();
+        endDate = now.toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+        
+        if (params.customRange) {
+          startDate = params.customRange.startDate;
+          endDate = params.customRange.endDate;
+        } else {
+          // Calculate date range based on period
+          switch (params.period) {
+            case 'today':
+              startDate = endDate;
+              break;
+            case 'yesterday':
+              const yesterday = new Date(now);
+              yesterday.setDate(yesterday.getDate() - 1);
+              startDate = yesterday.toISOString().split('T')[0];
+              endDate = startDate;
+              break;
+            case 'this_week':
+              const thisWeekStart = new Date(now);
+              thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
+              startDate = thisWeekStart.toISOString().split('T')[0];
+              break;
+            case 'last_week':
+              const lastWeekStart = new Date(now);
+              lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
+              startDate = lastWeekStart.toISOString().split('T')[0];
+              const lastWeekEnd = new Date(lastWeekStart);
+              lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+              endDate = lastWeekEnd.toISOString().split('T')[0];
+              break;
+            case 'this_month':
+              startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+              break;
+            case 'last_month':
+              const lastMonth = new Date(now);
+              lastMonth.setMonth(lastMonth.getMonth() - 1);
+              startDate = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`;
+              endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+              const endDateObj = new Date(endDate);
+              endDateObj.setDate(endDateObj.getDate() - 1);
+              endDate = endDateObj.toISOString().split('T')[0];
+              break;
+            case 'this_year':
+              startDate = `${now.getFullYear()}-01-01`;
+              break;
+            default:
+              // Default to this month
+              startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+          }
+        }
+        
+        console.log(`Fetching sales data from ${startDate} to ${endDate}`);
+        
+        // Fetch all sales from the database
+        const allSales = await window.electronAPI.getSales();
+        console.log('Received all sales data:', allSales);
+        
+        // Filter sales by date range
+        const filteredSales = allSales.filter(sale => {
+          try {
+            // Check if sale has valid date fields
+            let saleDate;
+            if (sale.date && sale.date !== 'Invalid Date' && sale.date !== 'undefined') {
+              try {
+                saleDate = new Date(sale.date);
+                // Check if date is valid
+                if (isNaN(saleDate.getTime())) {
+                  throw new Error('Invalid date');
+                }
+              } catch (e) {
+                // Fall back to createdAt
+                saleDate = sale.createdAt ? new Date(sale.createdAt) : new Date();
+              }
+            } else if (sale.createdAt && sale.createdAt !== 'Invalid Date' && sale.createdAt !== 'undefined') {
+              saleDate = new Date(sale.createdAt);
+              // Check if date is valid
+              if (isNaN(saleDate.getTime())) {
+                // Use current date as fallback
+                saleDate = new Date();
+              }
+            } else {
+              // No valid date field, skip this sale
+              console.warn('Sale has no valid date field:', sale.id || 'unknown');
+              return false;
+            }
+            
+            const saleYMD = saleDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+            return saleYMD >= startDate && saleYMD <= endDate;
+          } catch (error) {
+            console.error('Error processing sale date for filtering:', error, sale);
+            return false; // Skip this sale if there's an error
+          }
+        });
+        
+        console.log(`Filtered ${filteredSales.length} sales within date range`);
+        
+        // Calculate sales metrics
+        let totalSales = 0;
+        let totalTransactions = filteredSales.length;
+        let totalCost = 0;
+        
+        // Daily sales data for charts
+        const salesByDate = {};
+        const salesByProduct = {};
+        const salesByPaymentMethod = {};
+        
+        // Process sales data
+        filteredSales.forEach(sale => {
+          try {
+            // Calculate total sales amount
+            const saleAmount = Number(sale.totalAmount) || 0;
+            totalSales += saleAmount;
+            
+            // Get sale date for grouping - with error handling
+            let saleDate;
+            try {
+              if (sale.date && sale.date !== 'Invalid Date' && sale.date !== 'undefined') {
+                saleDate = new Date(sale.date);
+                // Verify it's a valid date
+                if (isNaN(saleDate.getTime())) {
+                  throw new Error('Invalid date value');
+                }
+              } else if (sale.createdAt && sale.createdAt !== 'Invalid Date' && sale.createdAt !== 'undefined') {
+                saleDate = new Date(sale.createdAt);
+                if (isNaN(saleDate.getTime())) {
+                  throw new Error('Invalid createdAt value');
+                }
+        } else {
+                // Use current date as fallback
+                saleDate = new Date();
+              }
+            } catch (dateError) {
+              console.warn('Error parsing sale date, using current date:', dateError);
+              saleDate = new Date(); // Fallback to current date
+            }
+            
+            const saleDateStr = saleDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            // Group by date
+            if (!salesByDate[saleDateStr]) {
+              salesByDate[saleDateStr] = {
+                date: saleDateStr,
+                total: 0,
+                count: 0
+              };
+            }
+            salesByDate[saleDateStr].total += saleAmount;
+            salesByDate[saleDateStr].count += 1;
+            
+            // Group by payment method
+            const paymentMethod = sale.paymentMethod || 'Unknown';
+            if (!salesByPaymentMethod[paymentMethod]) {
+              salesByPaymentMethod[paymentMethod] = {
+                method: paymentMethod,
+                total: 0,
+                count: 0
+              };
+            }
+            salesByPaymentMethod[paymentMethod].total += saleAmount;
+            salesByPaymentMethod[paymentMethod].count += 1;
+            
+            // Process sale items
+            if (sale.items && Array.isArray(sale.items)) {
+              sale.items.forEach(item => {
+                try {
+                  // Calculate cost if available
+                  const itemCost = Number(item.cost_price || item.costPrice) || 0;
+                  const itemQuantity = Number(item.quantity) || 0;
+                  totalCost += itemCost * itemQuantity;
+                  
+                  // Group by product
+                  const productName = item.product_name || item.productName || 'Unknown Product';
+                  if (!salesByProduct[productName]) {
+                    salesByProduct[productName] = {
+                      name: productName,
+                      total: 0,
+                      quantity: 0,
+                      revenue: 0
+                    };
+                  }
+                  salesByProduct[productName].quantity += itemQuantity;
+                  salesByProduct[productName].revenue += Number(item.total_price || item.totalPrice) || 0;
+                  salesByProduct[productName].total += 1;
+                } catch (itemError) {
+                  console.error('Error processing sale item:', itemError, item);
+                  // Continue with next item
+                }
+              });
+            }
+          } catch (saleError) {
+            console.error('Error processing sale:', saleError, sale);
+            // Continue with next sale
+          }
+        });
+        
+        // Calculate average order value
+        const avgOrder = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+        
+        // Calculate profit margin
+        const grossProfit = totalSales - totalCost;
+        const profitMargin = totalSales > 0 ? (grossProfit / totalSales) * 100 : 0;
+        
+        // Convert maps to arrays for easier processing in charts
+        const salesByDateArray = Object.values(salesByDate).sort((a, b) => {
+          try {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            
+            // Check if both dates are valid
+            if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) {
+              return 0; // Both invalid, consider equal
+            } else if (isNaN(dateA.getTime())) {
+              return 1; // A is invalid, B comes first
+            } else if (isNaN(dateB.getTime())) {
+              return -1; // B is invalid, A comes first
+            }
+            
+            // Both dates are valid, compare them
+            return dateA - dateB;
+          } catch (error) {
+            console.error('Error sorting dates:', error, a, b);
+            return 0; // Consider equal on error
+          }
+        });
+        
+        const salesByProductArray = Object.values(salesByProduct)
+          .sort((a, b) => b.revenue - a.revenue)
+          .slice(0, 10); // Top 10 products
+        
+        const salesByPaymentMethodArray = Object.values(salesByPaymentMethod);
+        
+        // Create report data object
+          reportData = {
+            stats: {
+            totalSales,
+            totalTransactions,
+            avgOrder,
+            profitMargin,
+            grossProfit,
+            totalCost
+          },
+          sales: filteredSales,
+          salesByDate: salesByDateArray,
+          salesByProduct: salesByProductArray,
+          salesByPaymentMethod: salesByPaymentMethodArray,
+          dateRange: { startDate, endDate }
+        };
+        
+        console.log('Generated sales report data:', reportData);
+        
+        // If no sales found, add flag
+        if (filteredSales.length === 0) {
+          reportData.noSalesFound = true;
+        }
+      } else if (reportType === 'profit') {
+        // Get real profit data
+        console.log('Fetching real profit data');
+        
+        let startDate, endDate;
+        if (params.customRange) {
+          startDate = params.customRange.startDate;
+          endDate = params.customRange.endDate;
+        } else {
+          // Calculate date range based on period
+          const now = new Date();
+          endDate = now.toISOString().split('T')[0];
+          
+          switch (params.period) {
+            case 'today':
+              startDate = endDate;
+              break;
+            case 'yesterday':
+              const yesterday = new Date(now);
+              yesterday.setDate(yesterday.getDate() - 1);
+              startDate = yesterday.toISOString().split('T')[0];
+              break;
+            case 'this_week':
+              const thisWeekStart = new Date(now);
+              thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
+              startDate = thisWeekStart.toISOString().split('T')[0];
+              break;
+            case 'last_week':
+              const lastWeekStart = new Date(now);
+              lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
+              startDate = lastWeekStart.toISOString().split('T')[0];
+              const lastWeekEnd = new Date(lastWeekStart);
+              lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+              endDate = lastWeekEnd.toISOString().split('T')[0];
+              break;
+            case 'this_month':
+              startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+              break;
+            case 'last_month':
+              const lastMonth = new Date(now);
+              lastMonth.setMonth(lastMonth.getMonth() - 1);
+              startDate = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`;
+              endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+              const endDateObj = new Date(endDate);
+              endDateObj.setDate(endDateObj.getDate() - 1);
+              endDate = endDateObj.toISOString().split('T')[0];
+              break;
+            case 'this_year':
+              startDate = `${now.getFullYear()}-01-01`;
+              break;
+            default:
+              // Default to this month
+              startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+          }
+        }
+        
+        // Get profit report from database with dates
+        const profitData = await window.electronAPI.generateProfitReport(startDate, endDate);
+        console.log('Received profit report data:', profitData);
+        
+        if (profitData) {
+          // Ensure numeric values
+          profitData.totalRevenue = Number(profitData.totalRevenue) || 0;
+          profitData.totalCost = Number(profitData.totalCost) || 0;
+          profitData.grossProfit = Number(profitData.grossProfit) || 0;
+          profitData.profitMargin = Number(profitData.profitMargin) || 0;
+          
+          reportData = profitData;
+        } else {
+          console.log('No profit data found, generating minimal report');
+          
+          // Generate minimal report with zeros
+          reportData = {
+            totalRevenue: 0,
+            totalCost: 0,
+            grossProfit: 0,
+            profitMargin: 0,
+            dateRange: { startDate, endDate },
+            noProfitData: true
+          };
+        }
+      } else if (reportType === 'customer') {
+        // Get real customer data
+        console.log('Fetching real customer data');
+        
+        try {
+          const customerData = await window.electronAPI.getCustomerReport(params);
+          
+          if (customerData) {
+            console.log('Customer report data received:', customerData);
+            reportData = customerData;
+          } else {
+            console.log('No customer data found, generating minimal report');
+            
+            reportData = {
+              totalCustomers: 0,
+              newCustomers: 0,
+              averageSpend: 0,
+              repeatRate: 0,
+              noCustomerData: true
+            };
+          }
+        } catch (error) {
+          console.error('Error fetching customer data:', error);
+          reportData = {
+            totalCustomers: 0,
+            newCustomers: 0,
+            averageSpend: 0,
+            repeatRate: 0,
+            noCustomerData: true,
+            error: error.message
+          };
+        }
+      } else if (reportType === 'supplier') {
+        // Get real supplier data
+        console.log('Fetching real supplier data');
+        
+        try {
+          let supplierData;
+    try {
+      supplierData = await window.electronAPI.invoke('get-supplier-report', params);
+    } catch (error) {
+      console.error('Error getting supplier report:', error);
+      // Fallback to a simplified report if the API fails
+      supplierData = {
+        totalSuppliers: 0,
+        totalPurchases: 0,
+        averageDeliveryTime: 0,
+        onTimeDelivery: 0,
+        suppliers: []
+      };
+    }
+          
+          if (supplierData) {
+            reportData = supplierData;
+          } else {
+            console.log('No supplier data found, generating minimal report');
+            
+            reportData = {
+              totalSuppliers: 0,
+              activeSuppliers: 0,
+              totalSpent: 0,
+              noSupplierData: true
+            };
+          }
+        } catch (error) {
+          console.error('Error fetching supplier data:', error);
+          reportData = {
+            totalSuppliers: 0,
+            activeSuppliers: 0,
+            totalSpent: 0,
+            noSupplierData: true,
+            error: error.message
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error generating report data:', error);
+      showNotification('error', 'Error', `Failed to generate report: ${error.message}`);
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      
+      // Reset button state
+      elements.generateReportBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Report';
+      elements.generateReportBtn.disabled = false;
+      return;
+    }
+    
+    if (!reportData) {
+      throw new Error(`Failed to generate report data for ${reportType}`);
+    }
+    
+    // Generate a timestamp for the report name
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/T/, '_').replace(/:/g, '-').replace(/\..+/, '');
+    
+    // Create a report object with auto-generated name
+    const report = {
+      id: `report-${Date.now()}`,
+      type: reportType,
+      name: `${getReportTitle(reportType)} - ${timestamp}`,
+      description: `${getReportTitle(reportType)} - ${getPeriodDescription(reportPeriod, params.customRange)}`,
+      data: reportData,
+      createdAt: now.toISOString(),
+      parameters: params,
+      charts: generateChartConfigs(reportType, reportData)
+    };
+    
+    // Store current report
+    reportStore.currentReport = report;
+    
+    // Handle different output formats
+    if (reportFormat === 'pdf') {
+      await exportReportToPdf(report);
+    } else if (reportFormat === 'csv') {
+      await exportReportToCsv(report);
+    } else {
+      // Display report on screen
+      displayReport(report);
+    }
+    
+    // Automatically save the report to database without showing modal
+    await autoSaveReport(report);
+    
+    // Show success notification
+    showNotification('success', 'Report Generated', `${getReportTitle(reportType)} has been generated and saved.`);
+    
+  } catch (error) {
+    console.error('Error generating report:', error);
+    showNotification('error', 'Report Generation Failed', error.message);
+  } finally {
+    // Reset button
+    elements.generateReportBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Report';
+    elements.generateReportBtn.disabled = false;
+  }
+}
+
+/**
+ * Automatically save a report to database without user prompt
+ * @param {Object} report - The report to save
+ */
+async function autoSaveReport(report) {
+  try {
+    console.log('Auto-saving report to database:', report);
+    
+    // Make sure the data property is serialized correctly
+    let dataToSave = report.data;
+    
+    // If data is already a string, check if it's valid JSON
+    if (typeof dataToSave === 'string') {
+      try {
+        // Verify it's valid JSON by parsing and re-stringifying
+        const parsed = JSON.parse(dataToSave);
+        dataToSave = JSON.stringify(parsed);
+      } catch (e) {
+        console.error('Invalid JSON in report data, will serialize:', e);
+        dataToSave = JSON.stringify(dataToSave);
+      }
+    } else if (typeof dataToSave === 'object') {
+      // Serialize object to JSON string
+      dataToSave = JSON.stringify(dataToSave);
+    }
+    
+    // Make sure parameters and charts are serialized properly if they're objects
+    const reportWithSerializedData = {
+      ...report,
+      data: dataToSave
+    };
+    
+    // Serialize other fields if needed
+    if (typeof reportWithSerializedData.parameters === 'object') {
+      reportWithSerializedData.parameters = JSON.stringify(reportWithSerializedData.parameters);
+    }
+    
+    if (typeof reportWithSerializedData.charts === 'object') {
+      reportWithSerializedData.charts = JSON.stringify(reportWithSerializedData.charts);
+    }
+    
+    console.log('Saving report to database (after serialization):', reportWithSerializedData);
+    
+    // Save to database
+    await window.electronAPI.addReport(reportWithSerializedData);
+    
+    // Update report list
+    await loadRecentReports();
+    
+    console.log('Report auto-saved successfully');
+  } catch (error) {
+    console.error('Error auto-saving report:', error);
+    showNotification('error', 'Error Saving Report', error.message);
+  }
+}
+
+/**
+ * Get a description of the selected time period
+ * @param {string} period - The period code
+ * @param {Object} customRange - Custom date range if applicable
+ * @returns {string} Period description
+ */
+function getPeriodDescription(period, customRange) {
+  switch (period) {
+    case 'today':
+      return 'Today';
+    case 'yesterday':
+      return 'Yesterday';
+    case 'this_week':
+      return 'This Week';
+    case 'last_week':
+      return 'Last Week';
+    case 'this_month':
+      return 'This Month';
+    case 'last_month':
+      return 'Last Month';
+    case 'this_year':
+      return 'This Year';
+    case 'custom':
+      if (customRange) {
+        return `${customRange.startDate} to ${customRange.endDate}`;
+      }
+      return 'Custom Period';
+    default:
+      return 'All Time';
+  }
+}
+
+/**
+ * Generate chart configurations for a report
+ * @param {string} reportType - The type of report
+ * @param {Object} data - The report data
+ * @returns {Array} Chart configurations
+ */
+function generateChartConfigs(reportType, data) {
+  console.log(`Generating chart configs for ${reportType} report`);
+  
+  if (!data) {
+    console.warn('No data provided for chart generation');
+    return [];
+  }
+  
+  const charts = [];
+  
+  // Different chart configurations based on report type
+  if (reportType === 'inventory') {
+    // Category distribution chart
+      if (data.categories && data.categories.length > 0) {
+        charts.push({
+        type: 'pie',
+          title: 'Inventory by Category',
+          data: {
+          labels: data.categories.map(cat => cat.name),
+            datasets: [{
+            label: 'Items',
+            data: data.categories.map(cat => cat.count),
+              backgroundColor: [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(255, 206, 86, 0.8)',
+              'rgba(75, 192, 192, 0.8)',
+              'rgba(153, 102, 255, 0.8)',
+              'rgba(255, 159, 64, 0.8)',
+              'rgba(199, 199, 199, 0.8)',
+              'rgba(83, 102, 255, 0.8)',
+              'rgba(40, 159, 64, 0.8)',
+              'rgba(210, 199, 199, 0.8)'
+            ]
+            }]
+          },
+          options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Inventory by Category'
+            }
+          }
+        }
+      });
+      
+      // Category value chart
+        charts.push({
+          type: 'bar',
+          title: 'Inventory Value by Category',
+          data: {
+          labels: data.categories.map(cat => cat.name),
+            datasets: [{
+            label: 'Value',
+            data: data.categories.map(cat => cat.value),
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Inventory Value by Category'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return formatCurrency(context.parsed.y);
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Low stock items chart
+    if (data.items && data.items.length > 0) {
+      // Filter to only low stock items
+      const lowStockItems = data.items
+        .filter(item => {
+          const quantity = Number(item.quantity) || 0;
+          const threshold = Number(item.alertThreshold) || 10;
+          return quantity <= threshold;
+        })
+        .sort((a, b) => {
+          // Sort by ratio of quantity to threshold (lowest first)
+          const ratioA = (Number(a.quantity) || 0) / (Number(a.alertThreshold) || 10);
+          const ratioB = (Number(b.quantity) || 0) / (Number(b.alertThreshold) || 10);
+          return ratioA - ratioB;
+        })
+        .slice(0, 10); // Top 10 lowest stock items
+          
+          if (lowStockItems.length > 0) {
+            charts.push({
+          type: 'bar',
+              title: 'Low Stock Items',
+              data: {
+            labels: lowStockItems.map(item => item.name || item.description || `Item #${item.id}`),
+            datasets: [
+              {
+                label: 'Current Quantity',
+                data: lowStockItems.map(item => Number(item.quantity) || 0),
+                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+              },
+              {
+                  label: 'Alert Threshold',
+                data: lowStockItems.map(item => Number(item.alertThreshold) || 10),
+                backgroundColor: 'rgba(255, 206, 86, 0.8)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'Low Stock Items'
+              }
+            }
+          }
+        });
+      }
+    }
+  } else if (reportType === 'sales') {
+    // Check if we have the new data structure with salesByDate
+    if (data.salesByDate && data.salesByDate.length > 0) {
+      // Daily sales chart
+        charts.push({
+          type: 'line',
+          title: 'Sales Over Time',
+          data: {
+          labels: data.salesByDate.map(day => {
+            // Format date as MM/DD
+            const date = new Date(day.date);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+          }),
+            datasets: [{
+            label: 'Sales Amount',
+            data: data.salesByDate.map(day => day.total),
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Daily Sales'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return formatCurrency(context.parsed.y);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Sales count chart
+      charts.push({
+        type: 'bar',
+        title: 'Number of Transactions',
+        data: {
+          labels: data.salesByDate.map(day => {
+            // Format date as MM/DD
+            const date = new Date(day.date);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+          }),
+          datasets: [{
+            label: 'Number of Transactions',
+            data: data.salesByDate.map(day => day.count),
+            backgroundColor: 'rgba(75, 192, 192, 0.8)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Daily Transaction Count'
+            }
+          }
+        }
+      });
+    }
+    
+    // Check if we have product sales data
+    if (data.salesByProduct && data.salesByProduct.length > 0) {
+      // Top products by revenue
+      charts.push({
+        type: 'bar',
+        title: 'Top Products by Revenue',
+        data: {
+          labels: data.salesByProduct.map(product => product.name),
+          datasets: [{
+            label: 'Revenue',
+            data: data.salesByProduct.map(product => product.revenue),
+            backgroundColor: 'rgba(153, 102, 255, 0.8)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Top Products by Revenue'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return formatCurrency(context.parsed.x);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Top products by quantity
+        charts.push({
+        type: 'pie',
+        title: 'Product Sales Distribution',
+          data: {
+          labels: data.salesByProduct.map(product => product.name),
+            datasets: [{
+            label: 'Quantity Sold',
+            data: data.salesByProduct.map(product => product.quantity),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 206, 86, 0.8)',
+              'rgba(75, 192, 192, 0.8)',
+              'rgba(153, 102, 255, 0.8)',
+              'rgba(255, 159, 64, 0.8)',
+              'rgba(199, 199, 199, 0.8)',
+              'rgba(83, 102, 255, 0.8)',
+              'rgba(40, 159, 64, 0.8)',
+              'rgba(210, 199, 199, 0.8)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Product Sales Distribution'
+            }
+          }
+        }
+      });
+    }
+    
+    // Check if we have payment method data
+    if (data.salesByPaymentMethod && data.salesByPaymentMethod.length > 0) {
+      // Payment methods chart
+      charts.push({
+        type: 'pie',
+        title: 'Payment Methods',
+        data: {
+          labels: data.salesByPaymentMethod.map(pm => pm.method),
+          datasets: [{
+            label: 'Sales Amount',
+            data: data.salesByPaymentMethod.map(pm => pm.total),
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(255, 206, 86, 0.8)',
+              'rgba(75, 192, 192, 0.8)',
+              'rgba(153, 102, 255, 0.8)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Payment Methods'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${formatCurrency(value)} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // If we don't have the new data structure, fall back to the old structure
+    if ((!data.salesByDate || data.salesByDate.length === 0) && 
+        (!data.salesByProduct || data.salesByProduct.length === 0) && 
+        data.sales && data.sales.length > 0) {
+      
+      // Process sales data for charts
+      const salesByDate = {};
+      const salesByProduct = {};
+      const salesByPaymentMethod = {};
+      
+      // Process sales data
+          data.sales.forEach(sale => {
+        // Get sale date for grouping
+        const saleDate = sale.date ? new Date(sale.date) : new Date(sale.createdAt);
+        const saleDateStr = saleDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        // Group by date
+        if (!salesByDate[saleDateStr]) {
+          salesByDate[saleDateStr] = {
+            date: saleDateStr,
+            total: 0,
+            count: 0
+          };
+        }
+        salesByDate[saleDateStr].total += Number(sale.totalAmount) || 0;
+        salesByDate[saleDateStr].count += 1;
+        
+        // Group by payment method
+        const paymentMethod = sale.paymentMethod || 'Unknown';
+        if (!salesByPaymentMethod[paymentMethod]) {
+          salesByPaymentMethod[paymentMethod] = {
+            method: paymentMethod,
+            total: 0,
+            count: 0
+          };
+        }
+        salesByPaymentMethod[paymentMethod].total += Number(sale.totalAmount) || 0;
+        salesByPaymentMethod[paymentMethod].count += 1;
+        
+        // Process sale items if available
+            if (sale.items && Array.isArray(sale.items)) {
+              sale.items.forEach(item => {
+            const productName = item.product_name || item.productName || 'Unknown Product';
+            if (!salesByProduct[productName]) {
+              salesByProduct[productName] = {
+                name: productName,
+                total: 0,
+                    quantity: 0,
+                    revenue: 0
+                  };
+                }
+            salesByProduct[productName].quantity += Number(item.quantity) || 0;
+            salesByProduct[productName].revenue += Number(item.total_price || item.totalPrice) || 0;
+            salesByProduct[productName].total += 1;
+              });
+            }
+          });
+          
+      // Convert to arrays
+      const salesByDateArray = Object.values(salesByDate).sort((a, b) => {
+        try {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          
+          // Check if both dates are valid
+          if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) {
+            return 0; // Both invalid, consider equal
+          } else if (isNaN(dateA.getTime())) {
+            return 1; // A is invalid, B comes first
+          } else if (isNaN(dateB.getTime())) {
+            return -1; // B is invalid, A comes first
+          }
+          
+          // Both dates are valid, compare them
+          return dateA - dateB;
+        } catch (error) {
+          console.error('Error sorting dates:', error, a, b);
+          return 0; // Consider equal on error
+        }
+      });
+      
+      const salesByProductArray = Object.values(salesByProduct)
+            .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10); // Top 10 products
+      
+      const salesByPaymentMethodArray = Object.values(salesByPaymentMethod);
+      
+      // Generate the same charts as above with the processed data
+      if (salesByDateArray.length > 0) {
+        // Daily sales chart
+            charts.push({
+          type: 'line',
+          title: 'Sales Over Time',
+              data: {
+            labels: salesByDateArray.map(day => {
+              // Format date as MM/DD
+              const date = new Date(day.date);
+              return `${date.getMonth() + 1}/${date.getDate()}`;
+            }),
+                datasets: [{
+              label: 'Sales Amount',
+              data: salesByDateArray.map(day => day.total),
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                }
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'Daily Sales'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return formatCurrency(context.parsed.y);
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        // Sales count chart
+        charts.push({
+          type: 'bar',
+          title: 'Number of Transactions',
+          data: {
+            labels: salesByDateArray.map(day => {
+              // Format date as MM/DD
+              const date = new Date(day.date);
+              return `${date.getMonth() + 1}/${date.getDate()}`;
+            }),
+            datasets: [{
+              label: 'Number of Transactions',
+              data: salesByDateArray.map(day => day.count),
+              backgroundColor: 'rgba(75, 192, 192, 0.8)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'Daily Transaction Count'
+              }
+            }
+          }
+        });
+      }
+    }
+  } else if (reportType === 'profit') {
+    // Profit vs. Revenue chart
+    if (data.totalRevenue !== undefined && data.totalCost !== undefined) {
+      // Ensure all values are numbers
+      const totalRevenue = Number(data.totalRevenue) || 0;
+      const totalCost = Number(data.totalCost) || 0;
+      const grossProfit = Number(data.grossProfit) || 0;
+      
+      console.log('Profit report data:', {
+        totalRevenue,
+        totalCost,
+        grossProfit,
+        profitMargin: data.profitMargin
+      });
+      
+      charts.push({
+        type: 'bar',
+        title: 'Revenue, Cost & Profit',
+        data: {
+          labels: ['Revenue', 'Cost', 'Profit'],
+          datasets: [{
+            label: 'Amount',
+            data: [
+              totalRevenue,
+              totalCost,
+              grossProfit
+            ],
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(75, 192, 192, 0.8)'
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatCurrency(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Revenue, Cost & Profit'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return formatCurrency(context.parsed.y);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Profit margin chart
+            charts.push({
+        type: 'doughnut',
+        title: 'Profit Margin',
+              data: {
+          labels: ['Cost', 'Profit'],
+                datasets: [{
+            data: [
+              totalCost,
+              grossProfit
+            ],
+                  backgroundColor: [
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(75, 192, 192, 0.8)'
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Profit Margin'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                  return `${formatCurrency(value)} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Add daily profit chart if timeline data is available
+      if (data.timeline && data.timeline.labels && data.timeline.labels.length > 0) {
+        console.log('Timeline data available:', data.timeline);
+        
+        // Ensure all values are arrays of numbers
+        const revenue = Array.isArray(data.timeline.revenue) ? data.timeline.revenue.map(val => Number(val) || 0) : [];
+        const cost = Array.isArray(data.timeline.cost) ? data.timeline.cost.map(val => Number(val) || 0) : [];
+        const profit = Array.isArray(data.timeline.profit) ? data.timeline.profit.map(val => Number(val) || 0) : [];
+        
+        // Format dates for labels
+        const labels = Array.isArray(data.timeline.labels) ? data.timeline.labels.map(date => {
+          try {
+            const d = new Date(date);
+            return `${d.getMonth() + 1}/${d.getDate()}`;
+          } catch (e) {
+            return date;
+          }
+        }) : [];
+        
+        if (labels.length > 0 && revenue.length > 0) {
+        charts.push({
+          type: 'line',
+            title: 'Daily Profit Trend',
+          data: {
+              labels: labels,
+            datasets: [
+              {
+                label: 'Revenue',
+                  data: revenue,
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4
+              },
+              {
+                label: 'Cost',
+                  data: cost,
+                  borderColor: 'rgba(255, 99, 132, 1)',
+                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4
+                },
+                {
+                  label: 'Profit',
+                  data: profit,
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.4
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function(value) {
+                      return formatCurrency(value);
+                    }
+                  }
+                }
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Daily Revenue, Cost & Profit'
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
+      
+      // Add product profitability chart if data is available
+      if (data.productProfits && data.productProfits.length > 0) {
+        console.log('Product profits data available:', data.productProfits);
+        
+        // Get top 5 products by profit
+        const topProducts = data.productProfits
+          .filter(p => p && p.name && p.profit !== undefined)
+          .slice(0, 5);
+          
+        if (topProducts.length > 0) {
+        charts.push({
+            type: 'bar',
+            title: 'Top Products by Profit',
+          data: {
+            labels: topProducts.map(p => p.name),
+            datasets: [{
+              label: 'Profit',
+                data: topProducts.map(p => Number(p.profit) || 0),
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+          },
+          options: {
+              indexAxis: 'y',
+              responsive: true,
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function(value) {
+                      return formatCurrency(value);
+                    }
+                  }
+                }
+              },
+            plugins: {
+              title: {
+                display: true,
+                  text: 'Top Products by Profit'
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return formatCurrency(context.parsed.x);
+                    }
+                  }
+                }
+              }
+          }
+        });
+      }
+      }
+    }
+  } else if (reportType === 'customer') {
+    // Customer metrics chart
+    if (data.totalCustomers !== undefined) {
+      charts.push({
+        type: 'bar',
+        title: 'Customer Metrics',
+        data: {
+          labels: ['Total Customers', 'New Customers'],
+          datasets: [{
+            label: 'Count',
+            data: [
+              Number(data.totalCustomers) || 0,
+              Number(data.newCustomers) || 0
+            ],
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(75, 192, 192, 0.8)'
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#ffffff',
+                font: {
+                  weight: 'bold'
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Customer Metrics',
+              color: '#ffffff',
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#ffffff'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#ffffff'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Top Customers Pie Chart
+    if (data.topCustomers && data.topCustomers.length > 0) {
+      console.log('Creating pie chart with top customers:', data.topCustomers);
+      
+      // Get top 5 customers for the pie chart
+      const topFiveCustomers = data.topCustomers.slice(0, 5);
+      const otherCustomers = data.topCustomers.slice(5);
+      
+      // Calculate total purchases for "Others" category
+      const othersPurchases = otherCustomers.reduce((sum, customer) => 
+        sum + Number(customer.totalPurchases || 0), 0);
+      
+      // Prepare data for pie chart
+      const labels = topFiveCustomers.map(customer => {
+        // Ensure we have a proper name by combining name and business if available
+        let displayName = 'Unknown';
+        if (customer.name && customer.business) {
+          displayName = `${customer.name} (${customer.business})`;
+        } else if (customer.name) {
+          displayName = customer.name;
+        } else if (customer.business) {
+          displayName = customer.business;
+        }
+        return displayName;
+      });
+      
+      // Add "Others" category if there are more than 5 customers
+      if (otherCustomers.length > 0) {
+        labels.push('Others');
+      }
+      
+      // Prepare purchase values
+      const values = topFiveCustomers.map(customer => 
+        Number(customer.totalPurchases || 0));
+      
+      // Add "Others" value if there are more than 5 customers
+      if (otherCustomers.length > 0) {
+        values.push(othersPurchases);
+      }
+      
+      // Generate colors
+      const backgroundColors = [
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)'
+      ];
+      
+      const borderColors = [
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)'
+      ];
+      
+      console.log('Pie chart data:', { labels, values });
+      
+      charts.push({
+        type: 'pie',
+        title: 'Top Customers by Sales',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: backgroundColors,
+            borderColor: borderColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right',
+              labels: {
+                color: '#ffffff',
+                font: {
+                  weight: 'bold'
+                },
+                padding: 20
+              }
+            },
+            title: {
+              display: true,
+              text: 'Top Customers by Sales',
+              color: '#ffffff',
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${context.label}: ${formatCurrency(value)} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      console.warn('No top customers data available for pie chart');
+      
+      // Create a placeholder pie chart
+      charts.push({
+        type: 'pie',
+        title: 'Top Customers by Sales',
+        data: {
+          labels: ['No Customer Data'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['rgba(200, 200, 200, 0.8)'],
+            borderColor: ['rgba(200, 200, 200, 1)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right',
+              labels: {
+                color: '#ffffff',
+                font: {
+                  weight: 'bold'
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Top Customers by Sales',
+              color: '#ffffff',
+              font: {
+                size: 16,
+                weight: 'bold'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'No customer data available';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  } else if (reportType === 'supplier') {
+    // Supplier metrics chart
+    if (data.totalSuppliers !== undefined) {
+        charts.push({
+          type: 'bar',
+        title: 'Supplier Metrics',
+          data: {
+          labels: ['Total Suppliers', 'Active Suppliers'],
+            datasets: [{
+            label: 'Count',
+            data: [
+              Number(data.totalSuppliers) || 0,
+              Number(data.activeSuppliers) || 0
+            ],
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(75, 192, 192, 0.8)'
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Supplier Metrics'
+            }
+          }
+        }
+      });
+      
+      // Total spent chart
+      if (data.totalSpent !== undefined) {
+        charts.push({
+          type: 'bar',
+          title: 'Total Spent with Suppliers',
+          data: {
+            labels: ['Total Spent'],
+            datasets: [{
+              label: 'Amount',
+              data: [Number(data.totalSpent) || 0],
+              backgroundColor: 'rgba(255, 159, 64, 0.8)',
+              borderColor: 'rgba(255, 159, 64, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatCurrency(value);
+                  }
+                }
+              }
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: 'Total Spent with Suppliers'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return formatCurrency(context.parsed.y);
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+  
+  // If no charts were generated, add a fallback
+  if (charts.length === 0) {
+    charts.push({
+      type: 'bar',
+      title: 'No Data Available',
+      data: {
+        labels: ['No Data'],
+        datasets: [{
+          label: 'No Data Available',
+          data: [0],
+          backgroundColor: 'rgba(200, 200, 200, 0.8)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'No Data Available for Charts'
+          }
+        }
+      }
+    });
+  }
+  
+  return charts;
+}
+
+/**
+ * Display a report in the UI
+ * @param {Object} report - The report to display
+ */
+function displayReport(report) {
+  if (!report) return;
+  
+  console.log('Displaying report (raw):', report);
+  
+  // Create a deep copy of the report to avoid modifying the original
+  const processedReport = JSON.parse(JSON.stringify(report));
+  
+  // If data is a string, parse it to an object
+  if (typeof processedReport.data === 'string') {
+    try {
+      processedReport.data = JSON.parse(processedReport.data);
+      console.log('Parsed report data from string:', processedReport.data);
+    } catch (error) {
+      console.error('Failed to parse report data string:', error);
+      // Provide a default empty data structure
+      processedReport.data = {
+        totalItems: 0,
+        totalValue: 0,
+        lowStockItems: 0,
+        categories: [],
+        items: []
+      };
+    }
+  }
+  
+  // Store current report
+  reportStore.currentReport = processedReport;
+  
+  // If there's no data at all, reload it from the database
+  if (!processedReport.data || Object.keys(processedReport.data).length === 0) {
+    console.log('Report data is empty, fetching data from database...');
+    
+    // Show loading indicator
+    const reportContainer = document.getElementById('current-report-container');
+    if (reportContainer) {
+      reportContainer.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Loading report data...</p></div>';
+      reportContainer.style.display = 'block';
+    }
+    
+    // Set default values first
+    processedReport.data = {
+      totalItems: 0,
+      totalValue: 0,
+      lowStockItems: 0,
+      categories: [],
+      items: []
+    };
+    
+    // Try to load the inventory data directly
+    window.electronAPI.getInventory().then(inventory => {
+      if (inventory && inventory.length > 0) {
+        console.log('Retrieved inventory data directly:', inventory);
+        
+        // Calculate metrics manually
+        const totalItems = inventory.length;
+        let totalValue = 0;
+        let lowStockItems = 0;
+        const categoriesMap = {};
+        
+        // Process inventory for metrics
+        inventory.forEach(item => {
+          const quantity = Number(item.quantity) || 0;
+          const price = Number(item.price) || 0;
+          const threshold = Number(item.alertThreshold) || 10;
+          
+          // Calculate total value (using price)
+          totalValue += quantity * price;
+          
+          // Check for low stock
+          if (quantity <= threshold) {
+            lowStockItems++;
+          }
+          
+          // Group by category
+          const category = item.category || 'Uncategorized';
+          if (!categoriesMap[category]) {
+            categoriesMap[category] = {
+              name: category,
+              count: 0,
+              value: 0
+            };
+          }
+          
+          categoriesMap[category].count++;
+          categoriesMap[category].value += quantity * price;
+        });
+        
+        // Use the calculated data
+        processedReport.data = {
+          totalItems,
+          totalValue,
+          lowStockItems,
+          categories: Object.values(categoriesMap),
+          items: inventory
+        };
+        
+        console.log('Calculated report data directly:', processedReport.data);
+        
+        // Render the report with new data
+        renderReportWithData(processedReport);
+      } else {
+        // Even if no inventory data, still render the report to prevent infinite loading
+        renderReportWithData(processedReport);
+      }
+    }).catch(error => {
+      console.error('Error fetching inventory data:', error);
+      // Render the report even if there's an error to prevent infinite loading
+      renderReportWithData(processedReport);
+    });
+  } else {
+    // If we already have data, render the report immediately
+    renderReportWithData(processedReport);
+  }
+}
+
+/**
+ * Helper function to render report content with given data
+ * @param {Object} report - The processed report with valid data
+ */
+function renderReportWithData(report) {
+  console.log('Rendering report with data:', report);
+  
+  // Clear any loading indicators
+  const loadingIndicator = document.querySelector('#current-report-container .spinner-border');
+  if (loadingIndicator) {
+    loadingIndicator.parentElement.remove();
+  }
+  
+  // Show the report container
+  elements.currentReportContainer.style.display = 'block';
+  
+  // Store report data in data attribute for reference
+  elements.currentReportContainer.dataset.reportId = report.id;
+  try {
+    elements.currentReportContainer.dataset.reportData = JSON.stringify({
+      id: report.id,
+      type: report.type,
+      name: report.name
+    });
+  } catch (e) {
+    console.error('Error storing report data in data attribute:', e);
+  }
+  
+  // Store in global variable for easier access
+  window.currentReport = report;
+  
+  // Set report title
+  elements.currentReportTitle.textContent = report.name || getReportTitle(report.type);
+  
+  // Render report components
+  renderReportMetrics(report);
+  renderReportCharts(report);
+  renderReportTable(report);
+  
+  // Enable report action buttons
+  elements.printReportBtn.disabled = false;
+  elements.exportPdfBtn.disabled = false;
+  elements.exportCsvBtn.disabled = false;
+  elements.closeReportBtn.disabled = false;
+  elements.saveReportBtn.disabled = false;
+  
+  // Scroll to report
+  elements.currentReportContainer.scrollIntoView({ behavior: 'smooth' });
+  
+  // Check if charts are rendering properly after a delay
+  setTimeout(checkChartsRendering, 1000);
+}
+
+/**
+ * Render metrics for the report
+ * @param {Object} report - The report to render metrics for
+ */
+function renderReportMetrics(report) {
+  if (!report || !report.data) return;
+  
+  console.log('Rendering report metrics:', report);
+  
+  // Format currency function
+  function formatCurrency(amount) {
+    // Always convert to number first to handle string values from DB
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : Number(amount || 0);
+    return new Intl.NumberFormat('sw-TZ', {
+      style: 'currency',
+      currency: 'TZS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numericAmount);
+  }
+
+  // Ensure numeric values, handling both string values and nulls
+  function ensureNumeric(value, defaultValue = 0) {
+    if (value === null || value === undefined) return defaultValue;
+    return typeof value === 'string' ? parseFloat(value) : Number(value);
+  }
+  
+  // Parse data if it's a string (can happen when loaded from DB)
+  let reportData = report.data;
+  if (typeof reportData === 'string') {
+    try {
+      reportData = JSON.parse(reportData);
+      console.log('Parsed report data from string:', reportData);
+    } catch (e) {
+      console.error('Failed to parse report data from string:', e);
+    }
+  }
+  
+  elements.reportMetrics.innerHTML = '';
+  
+  // Different metrics for different report types
+  switch (report.type) {
+    case 'inventory':
+      const totalItems = ensureNumeric(reportData.totalItems);
+      const totalValue = ensureNumeric(reportData.totalValue);
+      const lowStockItems = ensureNumeric(reportData.lowStockItems);
+      const categoriesLength = reportData.categories ? reportData.categories.length : 0;
+      
+      console.log('Inventory metrics:', { totalItems, totalValue, lowStockItems, categoriesLength });
+      
+      elements.reportMetrics.innerHTML = `
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${totalItems}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Items</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(totalValue)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Inventory Value</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${lowStockItems}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Low Stock Items</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${categoriesLength}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Categories</div>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+      
+    case 'sales':
+      // Ensure stats exists
+      const stats = reportData.stats || {};
+      
+      // Parse values ensuring they are numbers
+      const totalSales = ensureNumeric(stats.totalSales);
+      const totalTransactions = ensureNumeric(stats.totalTransactions);
+      const avgOrder = ensureNumeric(stats.avgOrder);
+      const profitMargin = ensureNumeric(stats.profitMargin);
+      
+      console.log('Sales metrics:', { totalSales, totalTransactions, avgOrder, profitMargin });
+      
+      elements.reportMetrics.innerHTML = `
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(totalSales)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Revenue</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${totalTransactions}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Transactions</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(avgOrder)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Average Order</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${profitMargin}%</div>
+              <div class="stat-label" style="color: #ffffff !important;">Profit Margin</div>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+      
+    case 'profit':
+      const totalRevenue = ensureNumeric(reportData.totalRevenue);
+      const totalCost = ensureNumeric(reportData.totalCost);
+      const grossProfit = ensureNumeric(reportData.grossProfit);
+      const profitMarginPercent = ensureNumeric(reportData.profitMargin);
+      
+      console.log('Profit metrics:', { totalRevenue, totalCost, grossProfit, profitMarginPercent });
+      
+      elements.reportMetrics.innerHTML = `
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(totalRevenue)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Revenue</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(totalCost)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Cost</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(grossProfit)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Gross Profit</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${profitMarginPercent}%</div>
+              <div class="stat-label" style="color: #ffffff !important;">Profit Margin</div>
+              <div class="animated-progress mt-2">
+                <span style="width: ${Math.min(profitMarginPercent, 100)}%"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+      
+    case 'customer':
+      elements.reportMetrics.innerHTML = `
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.totalCustomers || 0}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Customers</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.newCustomers || 0}</div>
+              <div class="stat-label" style="color: #ffffff !important;">New Customers</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(report.data.averageSpend)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Average Spend</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.repeatRate || 0}%</div>
+              <div class="stat-label" style="color: #ffffff !important;">Repeat Purchase Rate</div>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+      
+    case 'supplier':
+      elements.reportMetrics.innerHTML = `
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.totalSuppliers || 0}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Suppliers</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${formatCurrency(report.data.totalPurchases)}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Total Purchases</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.averageDeliveryTime || 0}</div>
+              <div class="stat-label" style="color: #ffffff !important;">Avg. Delivery (Days)</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="card dark-card">
+            <div class="card-body">
+              <div class="stat-highlight" style="color: #ffffff !important;">${report.data.onTimeDelivery || 0}%</div>
+              <div class="stat-label" style="color: #ffffff !important;">On-Time Delivery</div>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+      
+    default:
+      elements.reportMetrics.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-info">
+            <span style="color: #ffffff !important;">No metrics available for this report type.</span>
+          </div>
+        </div>
+      `;
+  }
+}
+
+/**
+ * Render charts for the report
+ * @param {Object} report - The report to render charts for
+ */
+function renderReportCharts(report) {
+  // Clear existing charts
+  elements.reportChartsContainer.innerHTML = '';
+  
+  if (!report || !report.charts || report.charts.length === 0) {
+    elements.reportChartsContainer.innerHTML = `
+      <div class="text-center p-5">
+        <i class="fas fa-chart-bar fa-3x mb-3" style="color: var(--text-secondary);"></i>
+        <p>No chart data available for this report.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Check if supplier functionality is not implemented
+  if (report.type === 'supplier' && report.data && report.data.notImplemented) {
+    elements.reportChartsContainer.innerHTML = `
+      <div class="text-center p-5">
+        <i class="fas fa-tools fa-3x mb-3" style="color: var(--text-secondary);"></i>
+        <p>${report.data.message || 'Supplier functionality is not yet implemented in this version.'}</p>
+        <p class="text-muted mt-2">This feature will be available in a future update.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Check if categories exist for inventory report
+  if (report.type === 'inventory' && (!report.data.categories || report.data.categories.length === 0)) {
+    // Create a message for inventory with no categories
+    elements.reportChartsContainer.innerHTML = `
+      <div class="text-center p-5">
+        <i class="fas fa-chart-bar fa-3x mb-3" style="color: #ffffff;"></i>
+        <p>No category data available for charting. Add categories to your inventory items to see charts.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Use the visual reports module to generate charts
+  if (window.VisualReports && typeof window.VisualReports.generateCharts === 'function') {
+    try {
+      console.log('Generating charts for report:', report);
+      window.VisualReports.generateCharts(report, 'report-charts-container');
+    } catch (error) {
+      console.error('Error generating charts:', error);
+      elements.reportChartsContainer.innerHTML = `
+        <div class="text-center p-5">
+          <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #ffffff;"></i>
+          <p>Error generating charts: ${error.message}</p>
+        </div>
+      `;
+    }
+  } else {
+    // Fallback if visual reports module is not available
+    elements.reportChartsContainer.innerHTML = `
+      <div class="text-center p-5">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #ffffff;"></i>
+        <p>Chart visualization module is not available.</p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Render the report data table
+ * @param {Object} report - The report data
+ */
+function renderReportTable(report) {
+  if (!report || !report.data) {
+    elements.reportDataTable.innerHTML = '<tr><td colspan="5" class="text-center">No data available</td></tr>';
+    return;
+  }
+  
+  const data = report.data;
+  let tableHeaders = [];
+  let tableRows = [];
+  
+  // Different table structure based on report type
+  switch (report.type) {
+    case 'inventory':
+      if (data.items && data.items.length > 0) {
+        tableHeaders = ['Item', 'Type', 'Quantity', 'Price', 'Value', 'Status'];
+        
+        tableRows = data.items.map(item => {
+          const quantity = Number(item.quantity) || 0;
+          const price = Number(item.price) || 0;
+          const value = quantity * price;
+          const threshold = Number(item.alertThreshold) || 10;
+          
+          let status = 'In Stock';
+          let statusClass = 'text-success';
+          
+          if (quantity <= 0) {
+            status = 'Out of Stock';
+            statusClass = 'text-danger';
+          } else if (quantity <= threshold) {
+            status = 'Low Stock';
+            statusClass = 'text-warning';
+          }
+          
+          return [
+            item.name || item.description || 'Unknown',
+            item.type || 'N/A',
+            quantity.toString(),
+            formatCurrency(price),
+            formatCurrency(value),
+            `<span class="${statusClass}">${status}</span>`
+          ];
+        });
+      }
+      break;
+      
+    case 'sales':
+      if (data.sales && data.sales.length > 0) {
+        tableHeaders = ['Invoice', 'Date', 'Customer', 'Items', 'Total', 'Payment Method'];
+        
+        tableRows = data.sales.map(sale => {
+          // Format date
+          const saleDate = sale.date ? new Date(sale.date) : new Date(sale.createdAt);
+          const formattedDate = saleDate.toLocaleDateString();
+          
+          // Get customer name
+          let customerName = 'Walk-in Customer';
+          if (sale.buyer) {
+            if (typeof sale.buyer === 'string') {
+              try {
+                const buyerObj = JSON.parse(sale.buyer);
+                customerName = buyerObj.name || buyerObj.business || 'Walk-in Customer';
+              } catch (e) {
+                customerName = 'Walk-in Customer';
+              }
+            } else if (typeof sale.buyer === 'object') {
+              customerName = sale.buyer.name || sale.buyer.business || 'Walk-in Customer';
+            }
+          } else if (sale.customer_name || sale.customerName) {
+            customerName = sale.customer_name || sale.customerName;
+          }
+          
+          // Count items
+          let itemCount = 0;
+          if (sale.items && Array.isArray(sale.items)) {
+            itemCount = sale.items.length;
+          }
+          
+          return [
+            sale.invoiceNumber || sale.invoice_number || `INV-${sale.id.substring(0, 8)}`,
+            formattedDate,
+            customerName,
+            `${itemCount} item${itemCount !== 1 ? 's' : ''}`,
+            formatCurrency(sale.totalAmount || sale.total_amount || 0),
+            sale.paymentMethod || sale.payment_method || 'Cash'
+          ];
+        });
+      } else if (data.noSalesFound) {
+        tableHeaders = ['Message'];
+        tableRows = [['No sales data found for the selected period.']];
+      }
+      break;
+      
+    case 'profit':
+      if (data.dateRange) {
+        // Check if we should show product profits instead of daily profits
+        const showProducts = data.productProfits && 
+                           data.productProfits.length > 0 && 
+                           (!data.dailyProfits || data.dailyProfits.length === 0 || 
+                            document.getElementById('product-profits-tab')?.classList.contains('active'));
+        
+        if (showProducts) {
+          // Show product profitability data
+          tableHeaders = ['Product', 'Revenue', 'Cost', 'Profit', 'Margin', 'Quantity'];
+          
+          tableRows = data.productProfits
+            .filter(product => product && product.name) // Filter out invalid products
+            .map(product => {
+              try {
+                const revenue = Number(product.revenue) || 0;
+                const cost = Number(product.cost) || 0;
+                const profit = Number(product.profit) || 0;
+                const margin = Number(product.margin) || (revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : 0);
+                const quantity = Number(product.quantity) || 0;
+                
+                return [
+                  product.name || 'Unknown',
+                  formatCurrency(revenue),
+                  formatCurrency(cost),
+                  formatCurrency(profit),
+                  `${margin}%`,
+                  quantity.toString()
+                ];
+              } catch (error) {
+                console.error('Error processing product profit data:', error, product);
+                return [
+                  product.name || 'Unknown',
+                  formatCurrency(0),
+                  formatCurrency(0),
+                  formatCurrency(0),
+                  '0%',
+                  '0'
+                ];
+              }
+            });
+        } 
+        // Show daily profits data if available
+        else if (data.dailyProfits && data.dailyProfits.length > 0) {
+          tableHeaders = ['Date', 'Revenue', 'Cost', 'Profit', 'Margin'];
+          
+          tableRows = data.dailyProfits
+            .filter(day => day && day.date) // Filter out invalid days
+            .map(day => {
+              try {
+                const date = new Date(day.date);
+                const formattedDate = date.toLocaleDateString();
+                const revenue = Number(day.revenue) || 0;
+                const cost = Number(day.cost) || 0;
+                const profit = revenue - cost;
+                const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : '0.00';
+                
+                return [
+                  formattedDate,
+                  formatCurrency(revenue),
+                  formatCurrency(cost),
+                  formatCurrency(profit),
+                  `${margin}%`
+                ];
+              } catch (error) {
+                console.error('Error processing profit day data:', error, day);
+                return [
+                  'Invalid Date',
+                  formatCurrency(0),
+                  formatCurrency(0),
+                  formatCurrency(0),
+                  '0.00%'
+                ];
+              }
+            });
+      } else {
+          // Just show the summary row
+          tableHeaders = ['Period', 'Revenue', 'Cost', 'Profit', 'Margin'];
+          
+          const revenue = Number(data.totalRevenue) || 0;
+          const cost = Number(data.totalCost) || 0;
+          const profit = Number(data.grossProfit) || 0;
+          const margin = Number(data.profitMargin) || 0;
+          
+          let periodText;
+          try {
+            const startDate = new Date(data.dateRange.startDate);
+            const endDate = new Date(data.dateRange.endDate);
+            const formattedStartDate = startDate.toLocaleDateString();
+            const formattedEndDate = endDate.toLocaleDateString();
+            periodText = formattedStartDate === formattedEndDate ? 
+              formattedStartDate : 
+              `${formattedStartDate} to ${formattedEndDate}`;
+          } catch (error) {
+            console.error('Error formatting date range:', error);
+            periodText = `${data.dateRange.startDate} to ${data.dateRange.endDate}`;
+          }
+          
+          tableRows = [[
+            periodText,
+            formatCurrency(revenue),
+            formatCurrency(cost),
+            formatCurrency(profit),
+            `${margin.toFixed(2)}%`
+          ]];
+        }
+      } else if (data.noProfitData) {
+        tableHeaders = ['Message'];
+        tableRows = [['No profit data found for the selected period.']];
+      }
+      break;
+      
+    case 'customer':
+      if (data.customers && data.customers.length > 0) {
+        tableHeaders = ['Customer', 'Total Purchases', 'Purchase Count', 'Avg. Order', 'Last Purchase'];
+        
+        tableRows = data.customers.map(customer => {
+          const totalPurchases = Number(customer.totalPurchases) || 0;
+          const purchaseCount = Number(customer.purchaseCount) || 0;
+          const avgOrder = purchaseCount > 0 ? totalPurchases / purchaseCount : 0;
+          
+          let lastPurchaseDate = 'Never';
+          if (customer.lastPurchaseDate) {
+            const date = new Date(customer.lastPurchaseDate);
+            lastPurchaseDate = date.toLocaleDateString();
+          }
+          
+          return [
+            customer.name || 'Unknown',
+            formatCurrency(totalPurchases),
+            purchaseCount.toString(),
+            formatCurrency(avgOrder),
+            lastPurchaseDate
+          ];
+        });
+      } else if (data.noCustomerData) {
+        tableHeaders = ['Message'];
+        tableRows = [['No customer data found for the selected period.']];
+      }
+      break;
+      
+    case 'supplier':
+      if (data.suppliers && data.suppliers.length > 0) {
+        tableHeaders = ['Supplier', 'Total Spent', 'Order Count', 'Avg. Order', 'Last Order'];
+        
+        tableRows = data.suppliers.map(supplier => {
+          const totalSpent = Number(supplier.totalSpent) || 0;
+          const orderCount = Number(supplier.orderCount) || 0;
+          const avgOrder = orderCount > 0 ? totalSpent / orderCount : 0;
+          
+          let lastOrderDate = 'Never';
+          if (supplier.lastOrderDate) {
+            const date = new Date(supplier.lastOrderDate);
+            lastOrderDate = date.toLocaleDateString();
+          }
+          
+          return [
+            supplier.name || 'Unknown',
+            formatCurrency(totalSpent),
+            orderCount.toString(),
+            formatCurrency(avgOrder),
+            lastOrderDate
+          ];
+        });
+      } else if (data.noSupplierData) {
+        tableHeaders = ['Message'];
+        tableRows = [['No supplier data found for the selected period.']];
+      }
+      break;
+      
+    default:
+      tableHeaders = ['Message'];
+      tableRows = [['No data available for this report type.']];
+  }
+  
+  // Generate table HTML
+        let tableHTML = `
+          <thead>
+            <tr>
+        ${tableHeaders.map(header => `<th>${header}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        
+  if (tableRows.length > 0) {
+    tableHTML += tableRows.map(row => `
+      <tr>
+        ${row.map(cell => `<td>${cell}</td>`).join('')}
+      </tr>
+    `).join('');
+  } else {
+          tableHTML += `
+            <tr>
+        <td colspan="${tableHeaders.length}" class="text-center">No data available</td>
+            </tr>
+          `;
+  }
+        
+        tableHTML += '</tbody>';
+  
+        elements.reportDataTable.innerHTML = tableHTML;
+}
+
+/**
+ * View a saved report
+ * @param {string} reportId - The ID of the report to view
+ */
+async function viewReport(reportId) {
+  try {
+    // Show loading indicator
+    elements.reportsLoading.style.display = 'block';
+    
+    console.log(`Fetching report ${reportId} from database`);
+    
+    // Get report from database
+    const report = await window.electronAPI.getReportById(reportId);
+    console.log('Viewing report from database (raw):', report);
+    
+    if (!report) {
+      throw new Error(`Report with ID ${reportId} not found`);
+    }
+    
+    // Process report data
+    const processedReport = { ...report };
+    
+    // Parse report data if it's a string
+    if (processedReport.data && typeof processedReport.data === 'string') {
+      try {
+        processedReport.data = JSON.parse(processedReport.data);
+        console.log('Parsed report data from string:', processedReport.data);
+      } catch (e) {
+        console.error(`Error parsing report data for ${reportId}:`, e);
+      }
+    }
+    
+    // If data is missing or empty, try to regenerate the data
+    if (!processedReport.data || Object.keys(processedReport.data).length === 0) {
+      console.log('Report data is missing or empty, regenerating...');
+      
+      // For inventory reports, fetch the data directly
+      if (processedReport.type === 'inventory') {
+        console.log('Fetching inventory data for inventory report');
+        try {
+          const inventory = await window.electronAPI.getInventory();
+          if (inventory && inventory.length > 0) {
+            // Calculate metrics
+            const totalItems = inventory.length;
+            let totalValue = 0;
+            let lowStockItems = 0;
+            const categoriesMap = {};
+            
+            // Process inventory for metrics
+            inventory.forEach(item => {
+              const quantity = Number(item.quantity) || 0;
+              const price = Number(item.price) || 0;
+              const threshold = Number(item.alertThreshold) || 10;
+              
+              totalValue += quantity * price;
+              
+              if (quantity <= threshold) {
+                lowStockItems++;
+              }
+              
+              const category = item.category || 'Uncategorized';
+              if (!categoriesMap[category]) {
+                categoriesMap[category] = {
+                  name: category,
+                  count: 0,
+                  value: 0
+                };
+              }
+              
+              categoriesMap[category].count++;
+              categoriesMap[category].value += quantity * price;
+            });
+            
+            // Create report data
+            processedReport.data = {
+              totalItems,
+              totalValue,
+              lowStockItems,
+              categories: Object.values(categoriesMap),
+              items: inventory
+            };
+            
+            // Generate charts
+            processedReport.charts = generateChartConfigs(processedReport.type, processedReport.data);
+            
+            console.log('Regenerated report data:', processedReport.data);
+          }
+        } catch (error) {
+          console.error('Error fetching inventory data:', error);
+        }
+      }
+    }
+    
+    // Ensure numeric values in data
+    if (processedReport.data) {
+      if (processedReport.type === 'inventory') {
+        processedReport.data.totalItems = Number(processedReport.data.totalItems) || 0;
+        processedReport.data.totalValue = Number(processedReport.data.totalValue) || 0;
+        processedReport.data.lowStockItems = Number(processedReport.data.lowStockItems) || 0;
+        
+        if (processedReport.data.categories) {
+          processedReport.data.categories = processedReport.data.categories.map(cat => ({
+            ...cat,
+            count: Number(cat.count) || 0,
+            value: Number(cat.value) || 0
+          }));
+        }
+      }
+    }
+    
+    // Parse report charts if it's a string
+    if (processedReport.charts && typeof processedReport.charts === 'string') {
+      try {
+        processedReport.charts = JSON.parse(processedReport.charts);
+        console.log('Parsed report charts from string:', processedReport.charts);
+      } catch (e) {
+        console.error(`Error parsing report charts for ${reportId}:`, e);
+        // Regenerate charts if parsing fails
+        processedReport.charts = generateChartConfigs(processedReport.type, processedReport.data);
+      }
+    }
+    
+    // Display the report
+    displayReport(processedReport);
+    
+  } catch (error) {
+    console.error('Error viewing report:', error);
+    showNotification('error', 'Error Viewing Report', error.message);
+  } finally {
+    elements.reportsLoading.style.display = 'none';
+  }
+}
+
+/**
+ * Save the current report to the database
+ */
+async function saveReport() {
+  try {
+    // Show loading indication
+    document.getElementById('save-report-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    document.getElementById('save-report-btn').disabled = true;
+    
+    // Get form input values
+    const reportName = document.getElementById('report-name').value.trim();
+    const reportDescription = document.getElementById('report-description').value.trim();
+    
+    if (!reportName) {
+      showNotification('error', 'Validation Error', 'Please enter a report name');
+      return;
+    }
+    
+    if (!reportStore.currentReport) {
+      showNotification('error', 'Error', 'No report data to save');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      return;
+    }
+    
+    // Update report with name and description
+    const reportToSave = {
+      ...reportStore.currentReport,
+      name: reportName,
+      description: reportDescription
+    };
+    
+    console.log('Saving report to database (before serialization):', reportToSave);
+    
+    // Make sure the data property is serialized correctly
+    let dataToSave = reportToSave.data;
+    
+    // If data is already a string, check if it's valid JSON
+    if (typeof dataToSave === 'string') {
+      try {
+        // Verify it's valid JSON by parsing and re-stringifying
+        const parsed = JSON.parse(dataToSave);
+        dataToSave = JSON.stringify(parsed);
+      } catch (e) {
+        console.error('Invalid JSON in report data, will serialize:', e);
+        dataToSave = JSON.stringify(dataToSave);
+      }
+    } else if (typeof dataToSave === 'object') {
+      // Serialize object to JSON string
+      dataToSave = JSON.stringify(dataToSave);
+    }
+    
+    // Make sure parameters and charts are serialized properly if they're objects
+    const reportWithSerializedData = {
+      ...reportToSave,
+      data: dataToSave
+    };
+    
+    // Serialize other fields if needed
+    if (typeof reportWithSerializedData.parameters === 'object') {
+      reportWithSerializedData.parameters = JSON.stringify(reportWithSerializedData.parameters);
+    }
+    
+    if (typeof reportWithSerializedData.charts === 'object') {
+      reportWithSerializedData.charts = JSON.stringify(reportWithSerializedData.charts);
+    }
+    
+    console.log('Saving report to database (after serialization):', reportWithSerializedData);
+    
+    // Save to database
+    await window.electronAPI.addReport(reportWithSerializedData);
+    
+    // Update report list
+    await loadRecentReports();
+    
+    // Close modal
+    const modal = document.getElementById('saveReportModal');
+    const bsModal = bootstrap.Modal.getInstance(modal);
+    if (bsModal) {
+      bsModal.hide();
+    }
+    
+    // Show success notification
+    showNotification('success', 'Report Saved', `Report "${reportName}" has been saved successfully.`);
+    
+  } catch (error) {
+    console.error('Error saving report:', error);
+    showNotification('error', 'Error Saving Report', error.message);
+  } finally {
+    document.getElementById('save-report-btn').innerHTML = 'Save Report';
+    document.getElementById('save-report-btn').disabled = false;
+  }
+}
+
+/**
+ * Delete a report from the database
+ * @param {string} reportId - The ID of the report to delete
+ */
+async function deleteReport(reportId) {
+  try {
+    if (!reportId) {
+      throw new Error('Report ID is required');
+    }
+    
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+      return;
+    }
+    
+    // Delete from database using the correct ipcRenderer method
+    await window.electronAPI.deleteReport(reportId);
+    
+    // If the deleted report is currently displayed, close it
+    if (reportStore.currentReport && reportStore.currentReport.id === reportId) {
+      closeReport();
+    }
+    
+    // Update report list
+    await loadRecentReports();
+    
+    // Show success notification
+    showNotification('success', 'Report Deleted', 'The report has been deleted successfully.');
+    
+  } catch (error) {
+    console.error('Error deleting report:', error);
+    showNotification('error', 'Error Deleting Report', error.message);
+  }
+}
+
+/**
+ * Search reports by name or description
+ * @param {string} searchTerm - The term to search for
+ */
+function searchReports(searchTerm) {
+  if (!reportStore.recentReports || reportStore.recentReports.length === 0) {
+    return;
+  }
+  
+  if (!searchTerm) {
+    // Reset to show all reports
+    renderReportsList(reportStore.recentReports);
+    return;
+  }
+  
+  const normalizedTerm = searchTerm.toLowerCase();
+  
+  // Filter reports by name or description
+  const filteredReports = reportStore.recentReports.filter(report => {
+    const name = (report.name || '').toLowerCase();
+    const description = (report.description || '').toLowerCase();
+    const type = (report.type || '').toLowerCase();
+    
+    return name.includes(normalizedTerm) || 
+           description.includes(normalizedTerm) ||
+           type.includes(normalizedTerm);
+  });
+  
+  // Render filtered list
+  renderReportsList(filteredReports);
+  
+  // Show message if no results
+  if (filteredReports.length === 0) {
+    elements.reportsList.innerHTML = `
+      <div class="text-center py-5">
+        <i class="fas fa-search fa-3x mb-3" style="color: var(--text-secondary);"></i>
+        <p>No reports found matching "${searchTerm}"</p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Close the current report view
+ */
+function closeReport() {
+  elements.currentReportContainer.style.display = 'none';
+  reportStore.currentReport = null;
+}
+
+/**
+ * Print the current report
+ */
+function printReport() {
+  if (!reportStore.currentReport) {
+    showNotification('error', 'Error', 'No report to print');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+    return;
+  }
+  
+  window.print();
+}
+
+/**
+ * Export the current report to PDF
+ */
+async function exportReportToPdf() {
+  try {
+    if (!reportStore.currentReport) {
+      showNotification('error', 'Error', 'No report to export');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      return;
+    }
+    
+    // Use the visual reports module to generate PDF
+    if (window.VisualReports && typeof window.VisualReports.generatePdfReport === 'function') {
+      const result = await window.VisualReports.generatePdfReport(reportStore.currentReport);
+      showNotification('success', 'PDF Generated', `Report has been exported to PDF: ${result}`);
+    } else {
+      // Fallback if visual reports module is not available
+      showNotification('error', 'Error', 'PDF generation module is not available');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+    }
+  } catch (error) {
+    console.error('Error exporting report to PDF:', error);
+    showNotification('error', 'Error Exporting PDF', error.message);
+  }
+}
+
+/**
+ * Export the current report to CSV
+ */
+async function exportReportToCsv() {
+  try {
+    if (!reportStore.currentReport) {
+      showNotification('error', 'Error', 'No report to export');
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      resetGenerateButton();
+      return;
+    }
+    
+    // Export using Electron API
+    const result = await window.electronAPI.invoke('export-report', { 
+      format: 'csv', 
+      reportId: reportStore.currentReport.id 
+    });
+    
+    if (result.success) {
+      showNotification('success', 'CSV Generated', `Report has been exported to CSV: ${result.filePath}`);
+    } else {
+      throw new Error(result.error || 'Failed to export report to CSV');
+    }
+  } catch (error) {
+    console.error('Error exporting report to CSV:', error);
+    showNotification('error', 'Error Exporting CSV', error.message);
+  }
+}
+
+/**
+ * Show a notification
+ * @param {string} type - The type of notification (success, error, warning, info)
+ * @param {string} title - The notification title
+ * @param {string|Error} message - The notification message or error object
+ */
+function showNotification(type, title, message) {
+  try {
+    // Format the message if it's an error object
+    let formattedMessage = message;
+    if (message instanceof Error) {
+      formattedMessage = message.message || "An unknown error occurred";
+    } else if (typeof message === 'object') {
+      formattedMessage = JSON.stringify(message) || "An unknown error occurred";
+    }
+    
+    if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+      window.NotificationSystem.show(formattedMessage, {
+        type: type,
+        title: title
+      });
+    } else {
+      // Fallback if notifications module is not available
+      console.warn(`${title}: ${formattedMessage}`);
+      alert(`${title}: ${formattedMessage}`);
+    }
+  } catch (err) {
+    // Last resort fallback
+    console.error('Error showing notification:', err);
+    alert(`${title}: Unable to display notification details`);
+  }
+}
+
+/**
+ * Format currency in TZS (Tanzanian Shillings)
+ * @param {number} amount - The amount to format
+ * @returns {string} Formatted currency
+ */
+function formatCurrency(amount) {
+  if (amount === undefined || amount === null) return 'TZS 0';
+  return new Intl.NumberFormat('sw-TZ', {
+    style: 'currency',
+    currency: 'TZS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
+/**
+ * Emergency fix to directly update report metrics in the DOM
+ * This bypasses all the normal rendering functions and directly sets the values
+ */
+function emergencyFixReportDisplay() {
+  console.log('EMERGENCY FIX: Directly updating report metrics in DOM');
+
+  try {
+    // Get all inventory data directly
+    window.electronAPI.getInventory().then(inventory => {
+      if (!inventory || inventory.length === 0) {
+        console.error('No inventory data available for emergency fix');
+        return;
+      }
+
+      console.log('EMERGENCY FIX: Got inventory data with', inventory.length, 'items');
+
+      // Calculate metrics
+      const totalItems = inventory.length;
+      let totalValue = 0;
+      let lowStockItems = 0;
+      const categoriesSet = new Set();
+
+      // Process inventory for metrics
+      inventory.forEach(item => {
+        const quantity = Number(item.quantity) || 0;
+        const price = Number(item.price) || 0;
+        const threshold = Number(item.alertThreshold) || 10;
+        
+        // Calculate total value
+        totalValue += quantity * price;
+        
+        // Check for low stock
+        if (quantity <= threshold) {
+          lowStockItems++;
+        }
+        
+        // Count unique categories
+        if (item.category) {
+          categoriesSet.add(item.category);
+        }
+      });
+
+      const categories = categoriesSet.size;
+
+      // Format currency
+      const formattedValue = new Intl.NumberFormat('sw-TZ', {
+        style: 'currency',
+        currency: 'TZS',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(totalValue);
+
+      console.log('EMERGENCY FIX: Calculated metrics', { totalItems, totalValue, lowStockItems, categories });
+
+      // Get all stat highlight elements
+      const statHighlights = document.querySelectorAll('.stat-highlight');
+      
+      // Directly update the DOM with the calculated values
+      if (statHighlights.length >= 4) {
+        // Total Items (first card)
+        statHighlights[0].textContent = totalItems;
+        
+        // Total Value (second card)
+        statHighlights[1].textContent = formattedValue;
+        
+        // Low Stock Items (third card)
+        statHighlights[2].textContent = lowStockItems;
+        
+        // Categories (fourth card)
+        statHighlights[3].textContent = categories;
+        
+        console.log('EMERGENCY FIX: Updated stat highlights in DOM');
+      } else {
+        console.error('EMERGENCY FIX: Could not find stat highlight elements in DOM');
+      }
+
+      // If there's no data table, create one
+      const dataTable = document.getElementById('report-data-table');
+      if (dataTable) {
+        let tableHTML = `
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col">Category</th>
+              <th scope="col">In Stock</th>
+              <th scope="col">Value</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+        `;
+        
+        // Add table rows
+        inventory.forEach(item => {
+          const quantity = Number(item.quantity) || 0;
+          const price = Number(item.price) || 0;
+          const threshold = Number(item.alertThreshold) || 10;
+          
+          const value = quantity * price;
+          const isLowStock = quantity <= threshold;
+          
+          tableHTML += `
+            <tr>
+              <td style="color: #ffffff !important;">${item.description || item.name || 'Unknown'}</td>
+              <td style="color: #ffffff !important;">${item.category || 'Uncategorized'}</td>
+              <td style="color: #ffffff !important;">${quantity}</td>
+              <td style="color: #ffffff !important;">${new Intl.NumberFormat('sw-TZ', {
+                style: 'currency',
+                currency: 'TZS',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(value)}</td>
+              <td style="color: #ffffff !important;">
+                <span class="badge ${isLowStock ? 'bg-danger' : 'bg-success'}" style="color: #ffffff !important;">
+                  ${isLowStock ? 'Low Stock' : 'In Stock'}
+                </span>
+              </td>
+            </tr>
+          `;
+        });
+        
+        tableHTML += '</tbody>';
+        dataTable.innerHTML = tableHTML;
+        console.log('EMERGENCY FIX: Updated data table in DOM');
+      }
+    }).catch(error => {
+      console.error('EMERGENCY FIX: Error fetching inventory data:', error);
+    });
+  } catch (error) {
+    console.error('EMERGENCY FIX: Failed to update report metrics:', error);
+  }
+}
+
+// Call the emergency fix function whenever a report is viewed
+const originalDisplayReport = displayReport;
+displayReport = function(report) {
+  originalDisplayReport(report);
+  
+  // Add a slight delay to ensure DOM elements are rendered
+  setTimeout(() => {
+    if (typeof emergencyFixReportDisplay === 'function') {
+      emergencyFixReportDisplay();
+    }
+  }, 200);
+};
+
+// Also call the emergency fix function for any existing reports
+document.addEventListener('DOMContentLoaded', () => {
+  // Additional listener for report container becoming visible
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.target.style.display === 'block') {
+        if (typeof emergencyFixReportDisplay === 'function') {
+          emergencyFixReportDisplay();
+        }
+      }
+    });
+  });
+
+  const reportContainer = document.getElementById('current-report-container');
+  if (reportContainer) {
+    observer.observe(reportContainer, { attributes: true, attributeFilter: ['style'] });
+  }
+});
+
+// Ensure all icons are visible by modifying their CSS properties
+function enhanceIconVisibility() {
+  // Select all icon elements
+  const iconElements = document.querySelectorAll('i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"]');
+  
+  // Apply basic visibility styles to each icon, without glowing effects
+  iconElements.forEach(icon => {
+    icon.style.color = '#ffffff';
+    icon.style.opacity = '1';
+  });
+  
+  // Select all SVG elements
+  const svgElements = document.querySelectorAll('svg, svg *');
+  
+  // Apply basic visibility styles to each SVG, without glowing effects
+  svgElements.forEach(svg => {
+    svg.style.fill = '#ffffff';
+  });
+  
+  // Select all chart-related elements
+  const chartElements = document.querySelectorAll('.chart-container, .chart-wrapper, canvas, [class*="chart-"], [id*="chart-"]');
+  
+  // Add global styles to the document
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"] {
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+    
+    svg, svg * {
+      fill: #ffffff !important;
+      stroke: #ffffff !important;
+    }
+    
+    .chart-title, .chart-label, .legend-item {
+      color: #ffffff !important;
+      font-weight: bold !important;
+    }
+  `;
+  
+  document.head.appendChild(styleElement);
+  
+  console.log('Enhanced visibility of icons and chart elements (no glow)');
+}
+
+// Call the function when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+  
+  // Call it again after a short delay to catch dynamically created elements
+  setTimeout(enhanceIconVisibility, 1000);
+  setTimeout(enhanceIconVisibility, 2000);
+});
+
+// Also call the function when the window finishes loading
+window.addEventListener('load', function() {
+  console.log('Window loaded, enhancing icon visibility');
+  enhanceIconVisibility();
+});
+
+// Enhance visibility after any AJAX requests complete
+const originalXHR = window.XMLHttpRequest;
+window.XMLHttpRequest = function() {
+  const xhr = new originalXHR();
+  const originalOnLoad = xhr.onload;
+  
+  xhr.onload = function() {
+    if (originalOnLoad) {
+      originalOnLoad.apply(this, arguments);
+    }
+    setTimeout(enhanceIconVisibility, 500);
+  };
+  
+  return xhr;
+}; 
+
+/**
+ * Check if charts are rendering properly and provide fallback if needed
+ */
+function checkChartsRendering() {
+  console.log('Checking if charts are rendering properly');
+  
+  // Wait a bit to ensure charts have had time to render
+  setTimeout(() => {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    const emptyCharts = [];
+    
+    chartContainers.forEach((container, index) => {
+      // Check if the chart has any visible content
+      const canvas = container.querySelector('canvas');
+      if (canvas) {
+        try {
+          const ctx = canvas.getContext('2d');
+          // Only check if canvas has a reasonable size
+          if (canvas.width > 10 && canvas.height > 10) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Check if the canvas is empty (all pixels are transparent or black)
+            let isEmpty = true;
+            let nonTransparentPixels = 0;
+            
+            // Sample pixels (check every 10th pixel to save performance)
+            for (let i = 0; i < data.length; i += 40) {
+              const alpha = data[i + 3]; // Alpha channel
+              // If we have non-transparent pixels
+              if (alpha > 10) {
+                nonTransparentPixels++;
+                // If we have enough non-transparent pixels, consider it non-empty
+                if (nonTransparentPixels > 10) {
+                  isEmpty = false;
+                  break;
+                }
+              }
+            }
+            
+            if (isEmpty) {
+              console.warn(`Chart ${index} appears to be empty`);
+              emptyCharts.push(index);
+            }
+          } else {
+            console.warn(`Chart ${index} has invalid dimensions: ${canvas.width}x${canvas.height}`);
+            emptyCharts.push(index);
+          }
+        } catch (error) {
+          console.error(`Error checking chart ${index}:`, error);
+        }
+      }
+    });
+    
+    // If we have empty charts, try to fix them
+    if (emptyCharts.length > 0) {
+      console.warn(`Found ${emptyCharts.length} empty charts. Attempting to fix...`);
+      
+      // Get the current report
+      const currentReport = getCurrentReport();
+      if (!currentReport) {
+        console.error('No current report found');
+        return;
+      }
+      
+      console.log('Current report:', currentReport);
+      
+      // Check if the report has valid data
+      if (!currentReport.data) {
+        console.error('Report has no data');
+        return;
+      }
+      
+      // Check specifically for sales and profit reports
+      if (currentReport.type === 'sales' || currentReport.type === 'profit') {
+        console.log(`Fixing ${currentReport.type} report charts`);
+        
+        // Ensure the report has valid chart configurations
+        if (!currentReport.charts || !Array.isArray(currentReport.charts)) {
+          console.log('Regenerating chart configurations');
+          currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        }
+        
+        // Add fallback data if needed
+        if (currentReport.type === 'sales') {
+          // Ensure sales data exists
+          if (!currentReport.data.sales || currentReport.data.sales.length === 0) {
+            console.log('Adding fallback sales data');
+            currentReport.data.sales = [
+              { date: new Date().toISOString(), total_amount: 0, id: 'fallback-1' }
+            ];
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.salesByDate || currentReport.data.salesByDate.length === 0) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.salesByDate = [
+              { date: yesterday.toISOString(), total: 0 },
+              { date: today.toISOString(), total: 0 }
+            ];
+          }
+        } else if (currentReport.type === 'profit') {
+          // Ensure profit data exists
+          if (currentReport.data.totalRevenue === undefined) {
+            console.log('Adding fallback profit data');
+            currentReport.data.totalRevenue = 0;
+            currentReport.data.totalCost = 0;
+            currentReport.data.grossProfit = 0;
+            currentReport.data.profitMargin = 0;
+          }
+          
+          // Ensure timeline data exists
+          if (!currentReport.data.timeline || !currentReport.data.timeline.labels) {
+            console.log('Adding fallback timeline data');
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            currentReport.data.timeline = {
+              labels: [yesterday.toISOString().split('T')[0], today.toISOString().split('T')[0]],
+              revenue: [0, 0],
+              cost: [0, 0],
+              profit: [0, 0]
+            };
+          }
+          
+          // Ensure product data exists
+          if (!currentReport.data.productProfits || currentReport.data.productProfits.length === 0) {
+            console.log('Adding fallback product data');
+            currentReport.data.productProfits = [
+              {
+                id: 'fallback-1',
+                name: 'No Sales Data',
+                revenue: 0,
+                cost: 0,
+                profit: 0,
+                quantity: 0,
+                margin: 0
+              }
+            ];
+          }
+        }
+        
+        // Regenerate charts with the enhanced data
+        currentReport.charts = generateChartConfigs(currentReport.type, currentReport.data);
+        
+        // Force re-render of the charts
+        if (window.VisualReports && typeof window.VisualReports.generateCharts === 'function') {
+          console.log('Re-rendering charts for current report');
+          window.VisualReports.generateCharts(currentReport, 'report-charts-container');
+        }
+      }
+    }
+  }, 1000); // Check after 1 second
+}
+
+/**
+ * Get the current report being displayed
+ * @returns {Object|null} The current report or null
+ */
+function getCurrentReport() {
+  try {
+    // Try to get the report from the global variable or data attribute
+    if (window.currentReport) {
+      return window.currentReport;
+    }
+    
+    // Try to get from data attribute
+    const reportContainer = document.getElementById('report-container');
+    if (reportContainer && reportContainer.dataset.reportId) {
+      const reportId = reportContainer.dataset.reportId;
+      const reportData = reportContainer.dataset.reportData;
+      
+      if (reportData) {
+        try {
+          return JSON.parse(reportData);
+        } catch (e) {
+          console.error('Error parsing report data:', e);
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting current report:', error);
+    return null;
+  }
+}
+/**
+ * Reset the generate button to its default state
+ */
+function resetGenerateButton() {
+  elements.generateReportBtn.innerHTML = '<i class="fas fa-file-alt me-2"></i> Generate Report';
+  elements.generateReportBtn.disabled = false;
+}

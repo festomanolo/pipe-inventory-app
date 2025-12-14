@@ -1,0 +1,195 @@
+{
+  "reports": [],
+  "inventory": [
+    {
+      "id": "product-001",
+      "description": "PVC Pipe 4\"",
+      "type": "PVC",
+      "category": "Pipes",
+      "brand": "Standard",
+      "size": "4 inch",
+      "quantity": 199,
+      "price": 10000,
+      "cost": 7000,
+      "alertThreshold": 20,
+      "createdAt": "2025-07-28T00:17:15.520Z",
+      "updatedAt": "2025-07-28T00:17:15.523Z"
+    },
+    {
+      "id": "product-002",
+      "description": "PVC Pipe 2\"",
+      "type": "PVC",
+      "category": "Pipes",
+      "brand": "Standard",
+      "size": "2 inch",
+      "quantity": 244,
+      "price": 5000,
+      "cost": 3500,
+      "alertThreshold": 20,
+      "createdAt": "2025-07-28T00:17:15.523Z",
+      "updatedAt": "2025-07-28T00:17:15.523Z"
+    },
+    {
+      "id": "product-003",
+      "description": "Metal Pipe 6\"",
+      "type": "Metal",
+      "category": "Pipes",
+      "brand": "Standard",
+      "size": "6 inch",
+      "quantity": 85,
+      "price": 34000,
+      "cost": 23800,
+      "alertThreshold": 20,
+      "createdAt": "2025-07-28T00:17:15.523Z",
+      "updatedAt": "2025-07-28T00:17:15.523Z"
+    }
+  ],
+  "sales": [
+    {
+      "id": "sale-1747567557923-001",
+      "customerId": "cust-1747567557886-001",
+      "customer_name": "John Smith",
+      "buyer": {
+        "id": "cust-1747567557886-001",
+        "name": "John Smith",
+        "business": "Smith Construction"
+      },
+      "totalAmount": 500000,
+      "total_amount": 500000,
+      "date": "2025-05-11T11:25:57.923Z",
+      "createdAt": "2025-05-11T11:25:57.923Z",
+      "items": [
+        {
+          "product_id": "product-001",
+          "product_name": "PVC Pipe 4\"",
+          "quantity": 50,
+          "unit_price": 10000,
+          "price": 10000,
+          "selling_price": 10000
+        }
+      ]
+    },
+    {
+      "id": "sale-1747567557923-002",
+      "customerId": "cust-1747567557888-002",
+      "customer_name": "Sarah Johnson",
+      "buyer": {
+        "id": "cust-1747567557888-002",
+        "name": "Sarah Johnson",
+        "business": "Johnson Plumbing"
+      },
+      "totalAmount": 300000,
+      "total_amount": 300000,
+      "date": "2025-05-17T11:25:57.923Z",
+      "createdAt": "2025-05-17T11:25:57.923Z",
+      "items": [
+        {
+          "product_id": "product-002",
+          "product_name": "PVC Pipe 2\"",
+          "quantity": 60,
+          "unit_price": 5000,
+          "price": 5000,
+          "selling_price": 5000
+        }
+      ]
+    },
+    {
+      "id": "sale-1747567557923-003",
+      "customerId": "cust-1747567557888-003",
+      "customer_name": "Michael Hakeem",
+      "buyer": {
+        "id": "cust-1747567557888-003",
+        "name": "Michael Hakeem",
+        "business": "Hakeem Hardware"
+      },
+      "totalAmount": 850000,
+      "total_amount": 850000,
+      "date": "2025-05-18T11:25:57.923Z",
+      "createdAt": "2025-05-18T11:25:57.923Z",
+      "items": [
+        {
+          "product_id": "product-003",
+          "product_name": "Metal Pipe 6\"",
+          "quantity": 25,
+          "unit_price": 34000,
+          "price": 34000,
+          "selling_price": 34000
+        }
+      ]
+    }
+  ],
+  "customers": [
+    {
+      "id": "cust-1747567557886-001",
+      "name": "John Smith",
+      "business": "Smith Construction",
+      "email": "john@smithconstruction.com",
+      "phone": "255-123-4567",
+      "address": "123 Main St, Dar es Salaam",
+      "tin": "TIN123456789",
+      "type": "premium",
+      "notes": "Regular buyer of large pipe quantities.",
+      "totalPurchases": 500000,
+      "purchaseCount": 1,
+      "lastPurchaseDate": "2025-05-11T11:25:57.923Z",
+      "createdAt": "2025-03-18T11:25:57.878Z",
+      "updatedAt": "2025-04-18T11:25:57.878Z"
+    },
+    {
+      "id": "cust-1747567557888-002",
+      "name": "Sarah Johnson",
+      "business": "Johnson Plumbing",
+      "email": "sarah@johnsonplumbing.com",
+      "phone": "255-987-6543",
+      "address": "456 Oak Ave, Arusha",
+      "tin": "TIN987654321",
+      "type": "regular",
+      "notes": "Prefers to be contacted by email.",
+      "totalPurchases": 300000,
+      "purchaseCount": 1,
+      "lastPurchaseDate": "2025-05-17T11:25:57.923Z",
+      "createdAt": "2025-04-18T11:25:57.878Z",
+      "updatedAt": "2025-05-18T11:25:57.878Z"
+    },
+    {
+      "id": "cust-1747567557888-003",
+      "name": "Michael Hakeem",
+      "business": "Hakeem Hardware",
+      "email": "michael@hakeemhardware.com",
+      "phone": "255-456-7890",
+      "address": "789 Pine Rd, Mwanza",
+      "tin": "TIN456789123",
+      "type": "premium",
+      "notes": "Bulk orders only, has his own transport.",
+      "totalPurchases": 850000,
+      "purchaseCount": 1,
+      "lastPurchaseDate": "2025-05-18T11:25:57.923Z",
+      "createdAt": "2025-03-18T11:25:57.878Z",
+      "updatedAt": "2025-05-18T11:25:57.878Z"
+    },
+    {
+      "id": "cust-1747567557888-004",
+      "name": "Amina Juma",
+      "business": "Juma Traders",
+      "email": "amina@jumatraders.co.tz",
+      "phone": "255-789-0123",
+      "address": "321 Cedar Blvd, Dodoma",
+      "tin": "TIN789123456",
+      "type": "regular",
+      "notes": "New customer with good potential.",
+      "totalPurchases": 0,
+      "purchaseCount": 0,
+      "lastPurchaseDate": null,
+      "createdAt": "2025-04-18T11:25:57.878Z",
+      "updatedAt": "2025-04-18T11:25:57.878Z"
+    }
+  ],
+  "settings": {
+    "companyName": "Pipe Inventory Management",
+    "alertThreshold": 10,
+    "currency": "TZS",
+    "currencySymbol": "TSh",
+    "dateFormat": "DD/MM/YYYY",
+    "language": "en"
+  }
+}

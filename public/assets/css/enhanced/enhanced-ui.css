@@ -1,0 +1,214 @@
+/**
+ * Enhanced UI/UX Styles for Pipe Inventory App
+ * Provides consistent styling across all pages
+ */
+
+:root {
+  --primary-color: #3b82f6;
+  --primary-light: #93c5fd;
+  --primary-dark: #1d4ed8;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --gray-dark: #1f2937;
+  --gray-medium: #4b5563;
+  --gray-light: #d1d5db;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --transition-smooth: all 0.3s ease;
+}
+
+/* Enhanced stock status indicators */
+tr.out-of-stock-row {
+  background-color: rgba(255, 0, 0, 0.08) !important;
+  position: relative;
+  animation: pulse-red 2s infinite;
+}
+
+tr.out-of-stock-row:hover {
+  background-color: rgba(255, 0, 0, 0.15) !important;
+}
+
+.out-of-stock-qty {
+  font-weight: bold !important;
+  color: #dc3545 !important;
+}
+
+@keyframes pulse-red {
+  0% { background-color: rgba(255, 0, 0, 0.08); }
+  50% { background-color: rgba(255, 0, 0, 0.15); }
+  100% { background-color: rgba(255, 0, 0, 0.08); }
+}
+
+tr.low-stock-row {
+  background-color: rgba(255, 193, 7, 0.08) !important;
+}
+
+tr.low-stock-row:hover {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+}
+
+.low-stock-qty {
+  font-weight: bold !important;
+  color: #fd7e14 !important;
+}
+
+tr.good-stock-row {
+  background-color: rgba(40, 167, 69, 0.04) !important;
+}
+
+tr.good-stock-row:hover {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.good-stock-qty {
+  color: #28a745 !important;
+}
+
+/* Enhanced status badges */
+.status-badge.status-danger {
+  background-color: #dc3545 !important;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+  animation: flash-badge 1.5s infinite;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.status-badge.status-warning {
+  background-color: #fd7e14 !important;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #dc3545;
+}
+
+.status-badge.status-success {
+  background-color: #28a745 !important;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+@keyframes flash-badge {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Global enhancements */
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-smooth);
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  border-bottom: none;
+  background: rgba(59, 130, 246, 0.05);
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.card-header i {
+  color: var(--primary-color);
+}
+
+.btn {
+  border-radius: 8px;
+  transition: var(--transition-smooth);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  border: none;
+  box-shadow: 0 3px 5px -1px rgba(59, 130, 246, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.35);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success-color), #059669);
+  border: none;
+  box-shadow: 0 3px 5px -1px rgba(16, 185, 129, 0.25);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #059669, var(--success-color));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px -2px rgba(16, 185, 129, 0.35);
+}
+
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.table tbody tr {
+  transition: var(--transition-smooth);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  padding: 10px 15px;
+  border: 1px solid var(--gray-light);
+  transition: var(--transition-smooth);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--gray-dark);
+}
+
+.input-group-text {
+  border-radius: 8px 0 0 8px;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: var(--gray-light);
+  color: var(--primary-color);
+}
+
+/* Animation for important buttons */
+@keyframes buttonPulse {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+.pulse-button {
+  animation: buttonPulse 2s infinite;
+}

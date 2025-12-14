@@ -1,0 +1,75 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+/pnpm-debug.log*
+
+# Build / output
+dist/
+out/
+release/
+build/
+dist-electron/
+*.tgz
+
+# Electron artifacts
+*.asar
+*.asar.unpacked
+*.dmg
+*.AppImage
+*.AppImage.blockmap
+*.exe
+*.msi
+*.deb
+*.snap
+*.rpm
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Env
+.env
+.env.*
+
+# Logs
+/*.log
+logs/
+.npm/_logs/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+
+# macOS
+.DS_Store
+._*
+
+# SQLite/runtime DBs (local runtime files)
+/*.db
+/*.sqlite
+/*.sqlite3
+
+# Temporary
+tmp/
+temp/
+.cache/
+/npm-debug.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Certificates/keys
+*.pem
+*.key
+*.p12
+*.crt

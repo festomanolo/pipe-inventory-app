@@ -1,0 +1,28 @@
+/**
+ * Icon visibility fixes for all platforms
+ */
+
+/* Force all icons to be visible */
+i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"] {
+  color: white !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+}
+
+/* Fix for report metrics */
+.stat-highlight {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 2rem !important;
+}
+
+.stat-label {
+  color: white !important;
+  font-size: 0.9rem !important;
+}
+
+/* Fix for table text */
+table td, table th {
+  color: white !important;
+}

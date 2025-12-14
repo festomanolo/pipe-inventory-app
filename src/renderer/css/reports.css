@@ -1,0 +1,653 @@
+/**
+ * Reports Page Styles
+ */
+
+/* GLOBAL WHITE TEXT STYLES FOR ALL REPORTS ELEMENTS */
+#reports-container *,
+.modal *,
+#saveReportModal *,
+#current-report-container *,
+.card *,
+.report-metrics *,
+.chart-container *,
+.table *,
+.card-title,
+.card-text,
+.form-label,
+.stat-highlight,
+.stat-label,
+.report-title,
+.report-description,
+.text-center,
+.alert {
+  color: #ffffff !important;
+}
+
+/* Completely force all text to white with high specificity */
+#app-container .card-title, 
+#app-container .stat-highlight, 
+#app-container .stat-label,
+#app-container canvas text,
+#app-container table th,
+#app-container table td,
+[id*='report'] span,
+[id*='report'] p,
+[id*='report'] div,
+[id*='report'] h1,
+[id*='report'] h2,
+[id*='report'] h3,
+[id*='report'] h4,
+[id*='report'] h5,
+[id*='report'] h6,
+[class*='report'] span,
+[class*='report'] p,
+[class*='report'] div,
+[class*='report'] h1,
+[class*='report'] h2,
+[class*='report'] h3,
+[class*='report'] h4,
+[class*='report'] h5,
+[class*='report'] h6 {
+  color: #ffffff !important;
+}
+
+/* Force canvas element text to be white */
+canvas, .report-chart, 
+.chart-container canvas, 
+.report-charts-container canvas {
+  filter: brightness(1.5) !important;
+}
+
+/* Ensure form elements have white text and darker backgrounds */
+#reports-container input,
+#reports-container select,
+#reports-container textarea,
+#reports-container .form-control,
+#reports-container .form-select,
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  color: #ffffff !important;
+  background-color: #1e2130 !important;
+  border-color: #2c3150 !important;
+}
+
+/* Fix dropdown arrow color */
+#reports-container .form-select,
+.modal-body .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Fix placeholder text color */
+#reports-container ::placeholder,
+.modal-body ::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Target Chart.js specific elements */
+#report-charts-container .chartjs-render-monitor text,
+#report-charts-container canvas text,
+#report-charts-container .chart-title {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Force SVG text elements to be white */
+#report-charts-container svg text,
+svg text {
+  fill: #ffffff !important;
+}
+
+/* Badge text should be visible */
+.badge {
+  color: #ffffff !important;
+}
+
+/* Specifically force metrics to be white */
+.card-body .stat-highlight,
+.card-body .stat-label,
+#reports-container .card-body .stat-highlight,
+#reports-container .card-body .stat-label {
+  color: #ffffff !important;
+}
+
+/* Modals need white text too */
+.modal-title, 
+.modal-header, 
+.modal-body, 
+.modal-footer,
+.modal-content,
+.modal-content * {
+  color: #ffffff !important;
+}
+
+/* Report Generator */
+.report-generator {
+  background-color: var(--dark-card);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.report-generator-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #ffffff;
+}
+
+/* Reports List */
+.reports-list-container {
+  margin-bottom: 30px;
+}
+
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.reports-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reports-search {
+  display: flex;
+  gap: 10px;
+  width: 300px;
+}
+
+.report-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.report-card .card-body {
+  padding: 15px;
+}
+
+.report-card .d-flex {
+  align-items: center;
+}
+
+.report-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.5rem;
+}
+
+.inventory-report-icon {
+  background-color: rgba(76, 201, 240, 0.15);
+  color: #4cc9f0;
+}
+
+.sales-report-icon {
+  background-color: rgba(247, 37, 133, 0.15);
+  color: #f72585;
+}
+
+.profit-report-icon {
+  background-color: rgba(56, 176, 0, 0.15);
+  color: #38b000;
+}
+
+.customer-report-icon {
+  background-color: rgba(67, 97, 238, 0.15);
+  color: #4361ee;
+}
+
+.supplier-report-icon {
+  background-color: rgba(249, 199, 79, 0.15);
+  color: #f9c74f;
+}
+
+.report-info {
+  flex: 1;
+}
+
+.report-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+}
+
+.report-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.report-date {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0;
+}
+
+.report-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.view-report-btn, .delete-report-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Current Report Display */
+.current-report-container {
+  display: none;
+  background-color: var(--dark-card);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.current-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.current-report-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.report-actions-bar {
+  display: flex;
+  gap: 10px;
+}
+
+/* Report Metrics */
+.report-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.stat-highlight {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Charts */
+.report-charts-container {
+  margin-bottom: 25px;
+}
+
+.chart-title {
+  margin-bottom: 15px;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.report-chart {
+  max-width: 100%;
+  height: 100%;
+}
+
+/* Data Table */
+.report-data-container {
+  margin-bottom: this;
+  overflow-x: auto;
+}
+
+.table-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--text-primary);
+}
+
+/* Animated Progress Bar */
+.animated-progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.animated-progress span {
+  height: 100%;
+  display: block;
+  width: 0;
+  background-color: #38b000;
+  transition: width 1s ease;
+}
+
+/* Loading & Empty States */
+.reports-loading, .no-reports-found {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.reports-loading i, .no-reports-found i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* Save Report Modal */
+.modal-content {
+  background-color: var(--dark-card);
+  border-color: var(--border-color);
+}
+
+.modal-header {
+  border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+  border-top-color: var(--border-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .generator-inputs {
+    flex-direction: column;
+  }
+  
+  .date-range-container {
+    flex-direction: column;
+  }
+  
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .reports-search {
+    width: 100%;
+  }
+  
+  .report-actions-bar {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-metrics > div {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  
+  .current-report-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .report-metrics > div {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Force chart titles, labels and canvas to use white text */
+.chart-title,
+#reports-container .chart-title,
+.report-chart-title,
+#report-charts-container canvas,
+.report-charts-container canvas,
+canvas.report-chart {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* Specifically target chart titles */
+div:has(> canvas.report-chart) h3,
+div:has(> canvas.report-chart) h5,
+.report-chart-wrapper h3,
+.report-chart-wrapper h5 {
+  color: #ffffff !important;
+}
+
+/* Add !important to all existing styles to override any inline styles */
+#reports-container * {
+  color: #ffffff !important;
+}
+
+/* Force white text for all report elements - highest priority */
+#reports-section *,
+#current-report-container *,
+.report-metrics *,
+.report-table *,
+.stat-highlight,
+.stat-label,
+.report-title,
+.report-header *,
+.report-data * {
+  color: #ffffff !important;
+}
+
+/* Explicitly target table cells and headers */
+#report-data-table th,
+#report-data-table td,
+#report-data-table tr,
+#report-data-table thead,
+#report-data-table tbody {
+  color: #ffffff !important;
+}
+
+/* Add filter for canvas elements */
+canvas.report-chart {
+  filter: brightness(1.2);
+}
+
+/* Make sure we override Bootstrap styles */
+.dark-card {
+  background-color: var(--dark-surface) !important;
+}
+
+.dark-card *,
+.card-body *,
+.stat-highlight,
+.stat-label {
+  color: #ffffff !important;
+}
+
+/* Charts - Natural Styling */
+.chart-container {
+  height: 250px;
+  width: 100%;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+/* Natural styling for chart canvases */
+.report-chart, 
+canvas.report-chart,
+.chart-container canvas {
+  height: 100%;
+  width: 100%;
+}
+
+/* Better styling for report charts container */
+.report-charts-container {
+  margin-bottom: 25px;
+}
+
+/* Improve card styling */
+.report-charts-container .card {
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.report-charts-container .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Improve chart containers on smaller screens */
+@media (max-width: 768px) {
+  .chart-container {
+    height: 220px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-container {
+    height: 200px;
+  }
+}
+
+/* Ensure chart wrapper div has proper dimensions */
+.report-charts-container .card-body > div {
+  height: 280px;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+/* Ensure canvas properly fills its container */
+canvas.report-chart {
+  filter: brightness(1.2);
+}
+
+/* Card styling */
+.report-charts-container .card {
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+/* Add subtle hover effect */
+.report-charts-container .card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .report-charts-container .card-body > div {
+    height: 250px;
+  }
+}
+
+/* Ensure all icons are visible with high contrast */
+i, .fa, .fas, .far, .fab, .bi, [class^="icon-"], [class*=" icon-"] {
+  color: #ffffff !important;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5) !important;
+  filter: brightness(1.3) contrast(1.2) !important;
+  opacity: 1 !important;
+}
+
+/* Chart text visibility fixes */
+.chart-container, .chart-wrapper, canvas {
+  filter: brightness(1.3) contrast(1.2) !important;
+}
+
+.chart-title, .chart-label, .legend-item, .chartjs-legend-item span, 
+.chart-legend, .chart-tooltip, .chart-tooltip-title, .chart-tooltip-body {
+  color: #ffffff !important;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7) !important;
+  font-weight: bold !important;
+  opacity: 1 !important;
+}
+
+/* Fix any SVG icons */
+svg, svg *, [class*="chart-"] svg, [class*="chart-"] svg * {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+  filter: brightness(1.3) contrast(1.2) drop-shadow(0 0 2px rgba(0, 0, 0, 0.5)) !important;
+}
+
+/* Fix for all charts */
+.chartjs-render-monitor, 
+.chartjs-size-monitor, 
+.chartjs-tooltip {
+  filter: brightness(1.3) contrast(1.2) !important;
+}
+
+/* Make all chart elements visible */
+.chartjs-render-monitor *,
+[class*="chart-"] *,
+[id*="chart-"] * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Add brightness to chart.js tooltip */
+.chartjs-tooltip {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  color: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2) !important;
+} 
+
+/**
+ * Notification Styling for Reports
+ */
+
+/* Toast notifications in reports section should always have black text */
+#reports-container .toast,
+#reports-container .toast-header,
+#reports-container .toast-body,
+#reports-container .toast *,
+.toast-container .toast,
+.toast-container .toast-header,
+.toast-container .toast-body, 
+.toast-container .toast * {
+  color: #000000 !important;
+}
+
+/* Override Bootstrap toast close button */
+.toast-container .btn-close,
+#reports-container .toast .btn-close {
+  filter: none !important;
+  opacity: 0.8;
+}
+
+/* Toastr specific overrides */
+.toast-success,
+.toast-error,
+.toast-info,
+.toast-warning {
+  color: #000000 !important;
+}
+
+.toast-success .toast-title,
+.toast-success .toast-message,
+.toast-error .toast-title,
+.toast-error .toast-message,
+.toast-info .toast-title,
+.toast-info .toast-message,
+.toast-warning .toast-title,
+.toast-warning .toast-message {
+  color: #000000 !important;
+} 

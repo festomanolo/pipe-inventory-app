@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eliva Hardware - Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="../../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons - Updated with SRI for Windows compatibility -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/font.css">
+  <link rel="stylesheet" href="../../public/assets/css/style.css">
+  <link rel="stylesheet" href="../../public/assets/css/animations.css">
+  <style>
+    /* Splash Screen and Loading Animation */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+    }
+    
+    .splash-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    .app-logo {
+      width: 160px;
+      height: 160px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    
+    .loader {
+      width: 48px;
+      height: 8px;
+      margin: 30px auto;
+      border-radius: 4px;
+      display: inline-block;
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+    
+    .loader::after {
+      content: '';
+      width: 24px;
+      height: 8px;
+      background: #4cc9f0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      box-sizing: border-box;
+      animation: animloader 1s linear infinite;
+      border-radius: 4px;
+    }
+    
+    @keyframes animloader {
+      0% {
+        left: 0;
+        transform: translateX(-100%);
+      }
+      100% {
+        left: 100%;
+        transform: translateX(0%);
+      }
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.95);
+        opacity: 0.7;
+      }
+    }
+    
+    .splash-title {
+      color: #ffffff;
+      font-size: 24px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    
+    .splash-subtitle {
+      color: #8d8d8d;
+      font-size: 16px;
+    }
+    
+    /* App container - hidden initially */
+    #app-container {
+      opacity: 0;
+      transition: opacity 0.6s ease-in;
+    }
+    
+    .app-visible {
+      opacity: 1 !important;
+    }
+    
+    /* About tab styling */
+    .profile-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .profile-header {
+      padding: 30px;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(45deg, #0f3460 0%, #e94560 100%);
+      color: white;
+    }
+    
+    .profile-img-container {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      padding: 5px;
+      background: linear-gradient(45deg, #4cc9f0, #4361ee);
+      animation: pulse 2s infinite;
+    }
+    
+    .profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #fff;
+    }
+    
+    .profile-name {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 10px 0 5px;
+      animation: slideUp 0.5s 0.2s both;
+    }
+    
+    .profile-title {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 5px;
+      animation: slideUp 0.5s 0.3s both;
+    }
+    
+    .profile-subtitle {
+      font-size: 14px;
+      opacity: 0.7;
+      animation: slideUp 0.5s 0.4s both;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .contact-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    
+    .contact-card {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease-out forwards;
+      opacity: 0;
+      color: white;
+    }
+    
+    .whatsapp-card {
+      background: linear-gradient(to right, #128C7E, #075E54);
+      animation-delay: 0.5s;
+    }
+    
+    .github-card {
+      background: linear-gradient(to right, #333333, #24292e);
+      animation-delay: 0.6s;
+    }
+    
+    .website-card {
+      background: linear-gradient(to right, #4361ee, #3a0ca3);
+      animation-delay: 0.7s;
+    }
+    
+    .contact-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 7px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      margin-right: 15px;
+      font-size: 20px;
+    }
+    
+    .card-content h6 {
+      margin: 0 0 5px;
+      font-weight: 600;
+    }
+    
+    .card-content a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .card-content a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    
+    .about-footer {
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .tech-badge {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: linear-gradient(to right, #0f3460, #16213e);
+      color: white;
+      animation: fadeIn 0.5s 0.8s both;
+    }
+    
+    .copyright {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0;
+      animation: fadeIn 0.5s 0.9s both;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(76, 201, 240, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(76, 201, 240, 0);
+      }
+    }
+    
+    /* Direct table header styling */
+    .table thead tr,
+    #inventory-table thead tr,
+    #sales-table thead tr,
+    .blue-header-table thead tr,
+    #recent-sales thead tr,
+    #low-stock-items thead tr {
+      background-color: #3b82f6 !important;
+      color: white !important;
+    }
+    
+    .table thead th,
+    #inventory-table thead th,
+    #sales-table thead th,
+    .blue-header-table thead th,
+    #recent-sales thead th,
+    #low-stock-items thead th {
+      background-color: #3b82f6 !important;
+      color: white !important;
+      font-weight: bold !important;
+      text-transform: uppercase !important;
+      font-size: 0.85rem !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    .window-drag-bar {
+      width: 100%;
+      height: 32px;
+      background: #222a36;
+      -webkit-app-region: drag;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+    .window-drag-bar .no-drag {
+      -webkit-app-region: no-drag;
+    }
+    
+    /* Daily Reports Settings - White Text Styling */
+    #reports .form-label,
+    #reports .form-check-label,
+    #reports .form-text,
+    #reports h5,
+    #reports p,
+    #reports small,
+    #reports .alert {
+      color: #ffffff !important;
+    }
+    
+    #reports .text-secondary {
+      color: #cccccc !important;
+    }
+    
+    #reports .alert-info {
+      background-color: rgba(13, 202, 240, 0.1) !important;
+      border-color: rgba(13, 202, 240, 0.2) !important;
+      color: #ffffff !important;
+    }
+    
+    #reports .form-control,
+    #reports .form-select {
+      background-color: #2c2c2e !important;
+      border-color: #48484a !important;
+      color: #ffffff !important;
+    }
+    
+    #reports .form-control:focus,
+    #reports .form-select:focus {
+      background-color: #3c3c3e !important;
+      border-color: #007bff !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    }
+    
+    #reports .form-control::placeholder {
+      color: #999999 !important;
+    }
+    
+    #reports .btn-outline-secondary {
+      color: #ffffff !important;
+      border-color: #6c757d !important;
+    }
+    
+    #reports .btn-outline-secondary:hover {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: #ffffff !important;
+    }
+  </style>
+
+  </head>
+<body>
+  <div class="window-drag-bar">
+    <!-- You can add window controls here if needed -->
+  </div>
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <img src="../../public/assets/images/logo.png" id="dashboard-splash-logo" alt="Eliva Hardware Logo" class="app-logo">
+    <script>
+      // Set the correct logo path based on environment
+      document.addEventListener('DOMContentLoaded', () => {
+        const logoElement = document.getElementById('dashboard-splash-logo');
+        // Check if we're in a packaged app
+        if (navigator.userAgent.includes('Electron')) {
+          // In production, use the logo from resources
+          logoElement.src = '../../../logo.png';
+        } else {
+          // In development, use the relative path
+          logoElement.src = '../../public/assets/images/logo.png';
+        }
+      });
+    </script>
+    <h1 class="splash-title">Eliva Hardware</h1>
+    <p class="splash-subtitle">Loading your dashboard...</p>
+    <span class="loader"></span>
+  </div>
+
+  <!-- Main App Container -->
+  <div id="app-container">
+    <!-- Mobile Toggle Button -->
+    <button class="toggle-sidebar" id="toggleSidebar">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+          <img src="../../public/assets/images/logo.png" id="sidebar-logo" alt="Eliva Hardware Logo" style="width: 50px; height: auto; margin-right: 10px;">
+          <h3>Eliva Hardware</h3>
+          <script>
+            // Set the correct logo path based on environment
+            document.addEventListener('DOMContentLoaded', () => {
+              const logoElement = document.getElementById('sidebar-logo');
+              // Check if we're in a packaged app
+              if (navigator.userAgent.includes('Electron')) {
+                // In production, use the logo from resources
+                logoElement.src = '../../../logo.png';
+              } else {
+                // In development, use the relative path
+                logoElement.src = '../../public/assets/images/logo.png';
+              }
+            });
+          </script>
+    </div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="#" class="active" data-tooltip="Dashboard">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="inventory.html" id="inventory-link" data-tooltip="Inventory">
+          <i class="fas fa-boxes"></i>
+          <span>Inventory</span>
+          <span class="alert-badge" id="alert-count">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="sales.html" id="sales-link" data-tooltip="Sales">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Sales</span>
+        </a>
+      </li>
+      <li>
+        <a href="customers.html" data-tooltip="Customers">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+      </li>
+      <li>
+        <a href="reports.html" id="reports-link" data-tooltip="Reports">
+          <i class="fas fa-file-alt"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li>
+        <a href="analytics.html" data-tooltip="Analytics">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#settingsModal" data-tooltip="Settings">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+          <li>
+            <a href="#" id="logout-link">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+          </a>
+        </li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-header">
+      <div class="d-flex align-items-center">
+        <img src="../../../logo.png" id="dashboard-header-logo" alt="Eliva Hardware Logo" style="width: 40px; height: auto; margin-right: 15px;" onerror="this.src='../../public/assets/images/logo.png';">
+        <h1><i class="fas fa-tachometer-alt me-2"></i> Dashboard</h1>
+      </div>
+      <div>
+        <span id="current-date" class="text-secondary"></span>
+      </div>
+    </div>
+
+    <!-- Alert Section -->
+    <div id="alerts-container" class="mb-4 animate-fade-in" style="display: none;">
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Low Inventory Alert!</strong> Some items are running low in stock.
+        <a href="#" id="view-alerts" class="alert-link ms-2">View details</a>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+          <div class="col-12 col-sm-6 col-md-3">
+        <div class="stat-card animate-fade-in">
+          <h3 id="total-inventory">--</h3>
+          <p>Total Inventory Items</p>
+          <div class="icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+        </div>
+      </div>
+          <div class="col-12 col-sm-6 col-md-3">
+        <div class="stat-card animate-fade-in" style="animation-delay: 0.1s;">
+          <h3 id="inventory-value">$--</h3>
+          <p>Inventory Value</p>
+          <div class="icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+        </div>
+      </div>
+          <div class="col-12 col-sm-6 col-md-3">
+        <div class="stat-card accent animate-fade-in" style="animation-delay: 0.2s;">
+          <h3 id="today-sales">--</h3>
+          <p>Today's Sales</p>
+          <div class="icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+        </div>
+      </div>
+          <div class="col-12 col-sm-6 col-md-3">
+        <div class="stat-card accent animate-fade-in" style="animation-delay: 0.3s;">
+          <h3 id="today-revenue">$--</h3>
+          <p>Today's Revenue</p>
+          <div class="icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+          <div class="col-12 col-lg-6">
+        <div class="card animate-fade-in" style="animation-delay: 0.4s;">
+          <div class="card-header">
+            <i class="fas fa-chart-pie me-2"></i> Inventory statistics
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="inventory-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div class="col-12 col-lg-6">
+        <div class="card animate-fade-in" style="animation-delay: 0.5s;">
+          <div class="card-header">
+            <i class="fas fa-chart-bar me-2"></i> Sales Trend (Last 7 Days)
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="sales-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+          <div class="col-12 col-lg-7">
+        <div class="card animate-fade-in" style="animation-delay: 0.6s;">
+          <div class="card-header">
+            <i class="fas fa-shopping-cart me-2"></i> Recent Sales
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover blue-header-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Buyer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-sales">
+                  <tr>
+                    <td colspan="4" class="text-center">
+                      <div class="loader"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-center mt-3">
+              <a href="#" id="view-all-sales" class="btn btn-sm btn-primary">View All Sales</a>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div class="col-12 col-lg-5">
+        <div class="card animate-fade-in" style="animation-delay: 0.7s;">
+          <div class="card-header">
+            <i class="fas fa-exclamation-circle me-2"></i> Low Stock Items
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover blue-header-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                  </tr>
+                </thead>
+                <tbody id="low-stock-items">
+                  <tr>
+                    <td colspan="3" class="text-center">
+                      <div class="loader"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-center mt-3">
+              <a href="#" id="manage-inventory" class="btn btn-sm btn-primary">Manage Inventory</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <!-- Recommendations Section -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card animate-fade-in" style="animation-delay: 0.8s;">
+              <div class="card-header">
+                <i class="fas fa-lightbulb me-2"></i> Smart Recommendations
+                <button type="button" class="btn btn-sm btn-outline-primary float-end" id="refresh-recommendations">
+                  <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+              </div>
+              <div class="card-body">
+                <div id="recommendations-list">
+                  <div class="text-center p-4">
+                    <div class="loader"></div>
+                    <p class="mt-3">Generating recommendations...</p>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="settingsModalLabel">
+              <i class="fas fa-cog me-2"></i> Settings
+          </h5>
+          <button type="button" class="btn-close btn-close-red" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">Daily Reports</button>
+              </li>
+              <li class="nav-item" role="presentation" id="password-tab-item">
+                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">Password</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab" aria-controls="about" aria-selected="false">About</button>
+              </li>
+            </ul>
+            
+            <!-- Tab content -->
+            <div class="tab-content">
+              <!-- General Settings -->
+              <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                <form id="general-settings-form">
+            <div class="mb-3">
+              <label for="company-name" class="form-label">Company Name</label>
+                    <input type="text" class="form-control" id="company-name" placeholder="Enter company name">
+            </div>
+            <div class="mb-3">
+                    <label for="alert-threshold" class="form-label">Default Alert Threshold</label>
+                    <input type="number" class="form-control" id="alert-threshold" min="1" value="10">
+              <small class="form-text text-secondary">Items with quantity below this value will trigger alerts</small>
+            </div>
+            <div class="mb-3">
+              <label for="currency" class="form-label">Currency</label>
+              <select class="form-select" id="currency">
+                <option value="USD">US Dollar ($)</option>
+                <option value="EUR">Euro (€)</option>
+                <option value="GBP">British Pound (£)</option>
+                      <option value="TZS">Tanzanian Shilling (TZsh)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="session-timeout" class="form-label">Session Timeout (Hours)</label>
+              <input type="number" class="form-control" id="session-timeout" min="1" max="24" value="3">
+              <small class="form-text text-secondary">Application will automatically logout after this period of inactivity</small>
+            </div>
+          </form>
+              </div>
+              
+              <!-- Daily Reports Settings -->
+              <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                <form id="daily-reports-form">
+                  <div class="mb-4">
+                    <h5 class="mb-3">
+                      <i class="fas fa-clock me-2"></i>Automatic Daily Reports
+                    </h5>
+                    <p class="text-secondary">Configure automatic generation of daily sales and inventory reports.</p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="enable-daily-reports" checked>
+                      <label class="form-check-label" for="enable-daily-reports">
+                        Enable automatic daily reports
+                      </label>
+                    </div>
+                    <small class="form-text text-secondary">Reports will be generated automatically at the specified time</small>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label for="report-hour" class="form-label">Hour (24-hour format)</label>
+                      <select class="form-select" id="report-hour">
+                        <option value="0">00 (Midnight)</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="report-minute" class="form-label">Minute</label>
+                      <select class="form-select" id="report-minute">
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="report-directory" class="form-label">Report Save Directory</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="report-directory" placeholder="Select directory to save reports" readonly>
+                      <button class="btn btn-outline-secondary" type="button" id="browse-directory">
+                        <i class="fas fa-folder-open"></i> Browse
+                      </button>
+                    </div>
+                    <small class="form-text text-secondary">Reports will be saved to this directory. If empty, reports will be saved to the default Documents folder.</small>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label">Report Types</label>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="include-sales-report" checked>
+                      <label class="form-check-label" for="include-sales-report">
+                        Daily Sales Report
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="include-inventory-report" checked>
+                      <label class="form-check-label" for="include-inventory-report">
+                        Daily Inventory Report
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="include-profit-report">
+                      <label class="form-check-label" for="include-profit-report">
+                        Daily Profit Report
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="show-notifications" checked>
+                      <label class="form-check-label" for="show-notifications">
+                        Show notifications when reports are generated
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="generate-on-startup">
+                      <label class="form-check-label" for="generate-on-startup">
+                        Generate missed reports on startup
+                      </label>
+                    </div>
+                    <small class="form-text text-secondary">If the system was off during scheduled time, generate the report when the app starts</small>
+                  </div>
+                  
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Reports will be generated automatically when the application is running. If the system is off during the scheduled time and "Generate missed reports on startup" is enabled, the report will be created when you next open the application.
+                  </div>
+                  
+                  <div class="d-grid">
+                    <button type="button" class="btn btn-success" id="generate-report-now">
+                      <i class="fas fa-file-pdf me-2"></i>Generate Today's Report Now
+                    </button>
+                  </div>
+                </form>
+              </div>
+              
+              <!-- About Section -->
+              <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+                <div class="profile-card">
+                  <div class="profile-header">
+                    <div class="profile-img-container">
+                      <img src="../../public/assets/images/festomanolo.png" alt="Profile" class="profile-img">
+                    </div>
+                    <div class="profile-info">
+                      <h3 class="profile-name">Festomanolo</h3>
+                      <p class="profile-title">Software Developer & Designer</p>
+                      <p class="profile-subtitle">Pipe Inventory Management System</p>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-cards">
+                    <div class="contact-card whatsapp-card">
+                      <div class="card-icon">
+                        <i class="fab fa-whatsapp"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>WhatsApp</h6>
+                        <a href="https://wa.me/255784953866" target="_blank">+255 784 953 866</a>
+                      </div>
+                    </div>
+                    
+                    <div class="contact-card github-card">
+                      <div class="card-icon">
+                        <i class="fab fa-github"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>GitHub</h6>
+                        <a href="https://github.com/festomanolo" target="_blank">@festomanolo</a>
+                      </div>
+                    </div>
+                    
+                    <div class="contact-card website-card">
+                      <div class="card-icon">
+                        <i class="fas fa-globe"></i>
+                      </div>
+                      <div class="card-content">
+                        <h6>Website</h6>
+                        <a href="https://festomanolo.xyz" target="_blank">festomanolo.xyz</a>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="about-footer">
+                    <div class="tech-stack">
+                      <span class="tech-badge">Node.js</span>
+                      <span class="tech-badge">Electron</span>
+                      <span class="tech-badge">JavaScript</span>
+                      <span class="tech-badge">HTML/CSS</span>
+                    </div>
+                    <p class="copyright"> 2024 Festomanolo. All rights reserved.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Password Change Section -->
+              <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                <div class="password-change-container">
+                  <h5 class="mb-4">
+                    <i class="fas fa-key me-2"></i>Change Password
+                  </h5>
+                  <form id="password-change-form">
+                    <div class="mb-3">
+                      <label for="current-password" class="form-label">Current Password</label>
+                      <input type="password" class="form-control" id="current-password" placeholder="Enter current password" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="new-password" class="form-label">New Password</label>
+                      <input type="password" class="form-control" id="new-password" placeholder="Enter new password" required minlength="6">
+                      <small class="form-text text-secondary">Password must be at least 6 characters long</small>
+                    </div>
+                    <div class="mb-3">
+                      <label for="confirm-password" class="form-label">Confirm New Password</label>
+                      <input type="password" class="form-control" id="confirm-password" placeholder="Confirm new password" required>
+                    </div>
+                    <div class="d-grid">
+                      <button type="submit" class="btn btn-primary" id="change-password-btn">
+                        <i class="fas fa-save me-2"></i>Change Password
+                      </button>
+                    </div>
+                  </form>
+                  <div class="alert alert-success mt-3" id="password-success" style="display: none;">
+                    <i class="fas fa-check-circle me-2"></i>Password changed successfully!
+                  </div>
+                  <div class="alert alert-danger mt-3" id="password-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle me-2"></i><span id="password-error-text"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-settings">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Low Stock Alert Modal -->
+  <div class="modal fade" id="alertsModal" tabindex="-1" aria-labelledby="alertsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="alertsModalLabel">
+            <i class="fas fa-exclamation-triangle me-2"></i> Low Stock Alerts
+          </h5>
+          <button type="button" class="btn-close btn-close-red" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Type</th>
+                  <th>Diameter</th>
+                  <th>Color</th>
+                  <th>Current Stock</th>
+                  <th>Threshold</th>
+                </tr>
+              </thead>
+              <tbody id="alerts-list">
+                <tr>
+                  <td colspan="6" class="text-center">
+                    <div class="loader"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="restock-items">Restock Items</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Dependencies -->
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../../node_modules/moment/min/moment.min.js"></script>
+  <script src="../../node_modules/chart.js/dist/chart.umd.js"></script>
+  <script src="../../public/assets/js/animations.js"></script>
+  <script src="js/notifications.js"></script>
+  
+  <!-- Session Manager -->
+  <script src="js/session-manager.js"></script>
+  <!-- Authentication Script -->
+  <script src="js/auth.js"></script>
+  <!-- Auto Reports Manager -->
+  <script src="js/auto-reports.js"></script>
+  <!-- Windows Input Fix -->
+  <script src="js/win-login-fix.js"></script>
+  <!-- Emergency Windows Input Fix -->
+  <script src="js/windows-input-emergency-fix.js"></script>
+  
+  <!-- Dashboard JavaScript (Minimal inline script) -->
+  <script>
+    // Set current date
+    document.getElementById('current-date').textContent = moment().format('dddd, MMMM D, YYYY');
+
+    // Navigation handlers
+    document.getElementById('inventory-link').addEventListener('click', () => {
+      // Redirect to the standalone inventory.html page instead of loading it within the dashboard
+      window.location.href = 'inventory.html';
+    });
+
+    document.getElementById('sales-link').addEventListener('click', () => {
+      // Redirect to the standalone sales.html page instead of loading it within the dashboard
+      window.location.href = 'sales.html';
+    });
+
+    document.getElementById('reports-link').addEventListener('click', () => {
+      // Navigate directly to reports.html
+      window.location.href = 'reports.html';
+    });
+
+    document.getElementById('manage-inventory').addEventListener('click', () => {
+      // Navigate directly to inventory.html instead of triggering the inventory link
+      window.location.href = 'inventory.html';
+    });
+
+    document.getElementById('view-all-sales').addEventListener('click', () => {
+      // Navigate directly to sales.html instead of triggering the sales link
+      window.location.href = 'sales.html';
+    });
+
+    // Settings handlers
+    // Load settings when modal is opened
+    document.getElementById('settingsModal').addEventListener('show.bs.modal', async () => {
+      try {
+        // Create fallback settings in case API call fails
+        const fallbackSettings = {
+          companyName: 'Pipe Inventory Management',
+          alertThreshold: 10,
+          currency: 'TZS',
+          currencySymbol: 'TZsh',
+          dateFormat: 'DD/MM/YYYY',
+          language: 'en'
+        };
+        
+        const fallbackDailyReportSettings = {
+          enabled: true,
+          hour: 0,
+          minute: 0,
+          directory: 'Reports',
+          showNotification: true
+        };
+        
+        // Fetch settings with fallback
+        let settings, dailyReportSettings;
+        
+        try {
+          settings = await window.electronAPI.getSettings();
+          console.log('Settings loaded successfully');
+        } catch (err) {
+          console.error('Error fetching settings:', err);
+          settings = fallbackSettings;
+          console.log('Using fallback settings');
+          
+          // Show a non-blocking notification
+          if (Dashboard && Dashboard.showNotification) {
+            Dashboard.showNotification('Using default settings', 'warning');
+          }
+        }
+        
+        try {
+          dailyReportSettings = await window.electronAPI.getDailyReportSettings();
+          console.log('Daily report settings loaded successfully');
+        } catch (err) {
+          console.error('Error fetching daily report settings:', err);
+          dailyReportSettings = fallbackDailyReportSettings;
+          console.log('Using fallback daily report settings');
+        }
+        
+        // Populate form fields with settings
+        document.getElementById('company-name').value = settings.companyName || 'Pipe Inventory Management';
+        document.getElementById('alert-threshold').value = settings.alertThreshold || 10;
+        document.getElementById('currency').value = settings.currency || 'TZS';
+        
+        // Populate daily report settings (check if elements exist first)
+        const enableReports = document.getElementById('enable-daily-reports');
+        if (enableReports) enableReports.checked = dailyReportSettings.enabled;
+        
+        const reportHour = document.getElementById('report-hour');
+        if (reportHour) reportHour.value = dailyReportSettings.hour || 0;
+        
+        const reportMinute = document.getElementById('report-minute');
+        if (reportMinute) reportMinute.value = dailyReportSettings.minute || 0;
+        
+        const reportDirectory = document.getElementById('report-directory');
+        if (reportDirectory) reportDirectory.value = dailyReportSettings.directory || 'Reports';
+        
+        const showNotifications = document.getElementById('show-notifications');
+        if (showNotifications) showNotifications.checked = dailyReportSettings.showNotification !== false;
+        
+      } catch (error) {
+        console.error('Error loading settings for modal:', error);
+        if (Dashboard && Dashboard.showNotification) {
+          Dashboard.showNotification('Error loading settings. Using defaults.', 'error');
+        }
+      }
+    });
+    
+    // Save settings
+    document.getElementById('save-settings').addEventListener('click', async () => {
+      // General settings
+      const companyName = document.getElementById('company-name').value;
+      const alertThreshold = parseInt(document.getElementById('alert-threshold').value);
+      const currency = document.getElementById('currency').value;
+      const sessionTimeout = parseInt(document.getElementById('session-timeout').value);
+
+      // Daily report settings
+      const dailyReportSettings = {
+        enabled: document.getElementById('enable-daily-reports').checked,
+        hour: parseInt(document.getElementById('report-hour').value || 0),
+        minute: parseInt(document.getElementById('report-minute').value || 0),
+        directory: document.getElementById('report-directory').value,
+        showNotification: document.getElementById('show-notifications').checked
+      };
+
+      try {
+        // Show saving notification
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Saving settings...', { 
+            type: 'info',
+            playSound: false
+          });
+        } else if (Dashboard && Dashboard.showNotification) {
+          Dashboard.showNotification('Saving settings...', 'info');
+        }
+        
+        // Try to save general settings
+        try {
+          await window.electronAPI.updateSettings({
+            companyName,
+            alertThreshold,
+            currency,
+            sessionTimeout
+          });
+          console.log('General settings saved successfully');
+        } catch (err) {
+          console.error('Error saving general settings:', err);
+          // Store in localStorage as fallback
+          localStorage.setItem('pipe_inventory_settings', JSON.stringify({
+            companyName,
+            alertThreshold,
+            currency,
+            sessionTimeout
+          }));
+          
+            // Save session timeout using SessionManager
+          window.SessionManager.setSessionTimeout(sessionTimeout);
+          console.log('Session timeout saved:', sessionTimeout, 'hours');
+          console.log('Saved general settings to localStorage as fallback');
+        }
+        
+        // Try to save daily report settings
+        try {
+          await window.electronAPI.updateDailyReportSettings(dailyReportSettings);
+          console.log('Daily report settings saved successfully');
+        } catch (err) {
+          console.error('Error saving daily report settings:', err);
+          // Store in localStorage as fallback
+          localStorage.setItem('pipe_inventory_daily_report_settings', JSON.stringify(dailyReportSettings));
+          console.log('Saved daily report settings to localStorage as fallback');
+        }
+      
+        // Close modal
+        const settingsModal = bootstrap.Modal.getInstance(document.getElementById('settingsModal'));
+        settingsModal.hide();
+
+        // Show success message
+        showSafeNotification('Settings saved successfully', 'success');
+
+        // Reload dashboard
+        loadDashboardData();
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        
+        // Show error message
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Error saving settings: ' + (error.message || 'Unknown error'), { 
+            type: 'error',
+            title: 'Save Failed'
+          });
+        } else {
+          showNotification('Error saving settings', 'error');
+          }
+        }
+      });
+      
+    // Initialize sidebar toggle
+    document.getElementById('toggleSidebar').addEventListener('click', () => {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('expanded');
+    });
+
+    // Auto-expand sidebar on first visit for better UX
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.querySelector('.sidebar');
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const reportsLink = document.getElementById('reports-link');
+      const isFirstVisit = !localStorage.getItem('sidebarVisited');
+      
+      // Debug: Check if Reports link exists
+      console.log('Reports link found:', reportsLink ? 'Yes' : 'No');
+      console.log('Sidebar found:', sidebar ? 'Yes' : 'No');
+      
+      // If it's first visit and screen is medium size, expand sidebar
+      if (isFirstVisit && window.innerWidth <= 992 && window.innerWidth > 576) {
+        sidebar.classList.add('expanded');
+        localStorage.setItem('sidebarVisited', 'true');
+      }
+      
+      // Add pulse animation to toggle button for first-time users
+      if (isFirstVisit && toggleBtn && window.innerWidth <= 992) {
+        toggleBtn.classList.add('pulse');
+        
+        // Remove pulse after 10 seconds or when clicked
+        setTimeout(() => {
+          toggleBtn.classList.remove('pulse');
+        }, 10000);
+      }
+      
+      // Save sidebar state when toggled
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const isExpanded = sidebar.classList.contains('expanded');
+          localStorage.setItem('sidebarCollapsed', !isExpanded);
+          toggleBtn.classList.remove('pulse');
+          localStorage.setItem('sidebarVisited', 'true');
+        });
+      }
+      
+      // Debug: Log all sidebar navigation links
+      const navLinks = document.querySelectorAll('.sidebar-nav li a');
+      const allListItems = document.querySelectorAll('.sidebar-nav li');
+      
+      console.log('Total list items found:', allListItems.length);
+      console.log('Total navigation links found:', navLinks.length);
+      
+      allListItems.forEach((li, index) => {
+        const link = li.querySelector('a');
+        const isVisible = window.getComputedStyle(li).display !== 'none' && 
+                         window.getComputedStyle(li).visibility !== 'hidden';
+        console.log(`Item ${index}:`, {
+          text: link ? link.textContent.trim() : 'No link',
+          href: link ? link.href : 'No href',
+          visible: isVisible,
+          display: window.getComputedStyle(li).display,
+          visibility: window.getComputedStyle(li).visibility
+        });
+      });
+      
+      // Specifically check Reports link
+      if (reportsLink) {
+        const reportsLi = reportsLink.parentElement;
+        console.log('Reports link details:', {
+          exists: true,
+          text: reportsLink.textContent.trim(),
+          href: reportsLink.href,
+          liDisplay: window.getComputedStyle(reportsLi).display,
+          liVisibility: window.getComputedStyle(reportsLi).visibility,
+          linkDisplay: window.getComputedStyle(reportsLink).display,
+          linkVisibility: window.getComputedStyle(reportsLink).visibility
+        });
+      }
+    });
+    
+    // Handle external links in About section
+    document.addEventListener('DOMContentLoaded', () => {
+      const aboutSection = document.querySelector('#about');
+      if (aboutSection) {
+        aboutSection.addEventListener('click', (event) => {
+          const target = event.target.closest('a[href]');
+          if (target && target.getAttribute('href').startsWith('http')) {
+            event.preventDefault();
+            // Use Electron's shell to open the link in the default browser
+            window.electronAPI.openExternalLink(target.getAttribute('href'))
+              .then(result => {
+                if (!result.success) {
+                  console.error('Failed to open link:', result.error);
+                }
+              })
+              .catch(err => {
+                console.error('Error opening link:', err);
+              });
+          }
+        });
+      }
+    });
+    
+    // Load settings when the settings modal is shown
+    const settingsModal = document.getElementById('settingsModal');
+    settingsModal.addEventListener('show.bs.modal', async () => {
+      try {
+        // Load general settings
+        const settings = await window.electronAPI.getSettings();
+        document.getElementById('company-name').value = settings.companyName || '';
+        document.getElementById('alert-threshold').value = settings.alertThreshold || 10;
+        document.getElementById('currency').value = settings.currency || 'TZS';
+        
+        // Load daily report settings
+        const reportSettings = await window.electronAPI.getDailyReportSettings();
+        document.getElementById('enable-daily-reports').checked = reportSettings.enabled !== false;
+        document.getElementById('report-hour').value = reportSettings.hour || 0;
+        document.getElementById('report-minute').value = reportSettings.minute || 0;
+        document.getElementById('report-directory').value = reportSettings.directory || '';
+        document.getElementById('show-notifications').checked = reportSettings.showNotification !== false;
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        showNotification('Error loading settings', 'error');
+      }
+    });
+    
+    // Handle directory selection for reports
+    document.getElementById('choose-directory').addEventListener('click', async () => {
+      try {
+        const result = await window.electronAPI.savePdf({
+          defaultPath: document.getElementById('report-directory').value,
+          properties: ['openDirectory', 'createDirectory']
+        });
+        
+        if (result) {
+          document.getElementById('report-directory').value = result;
+        }
+      } catch (error) {
+        console.error('Error selecting directory:', error);
+        showNotification('Error selecting directory', 'error');
+      }
+    });
+    
+    // Generate report now button
+    document.getElementById('generate-report-now').addEventListener('click', async () => {
+      try {
+        // Show loading state
+        const button = document.getElementById('generate-report-now');
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating...';
+        
+        // Show processing notification
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Generating daily report...', { 
+            type: 'info',
+            playSound: false
+          });
+        }
+        
+        // Generate the report
+        const result = await window.electronAPI.generateDailyReportNow();
+        
+        // Handle result
+        if (result.success) {
+          // Show success notification with sound
+          if (window.NotificationSystem) {
+            window.NotificationSystem.show(`Report generated: ${result.message}`, { 
+              type: 'success',
+              title: 'Report Generated'
+            });
+          } else {
+            showNotification(`Report generated: ${result.message}`, 'success');
+          }
+          
+          // Ask if user wants to open the file
+          if (confirm('Report generated successfully! Do you want to open it?')) {
+            window.electronAPI.openFile(result.filePath);
+          }
+      } else {
+          // Show warning notification with sound
+          if (window.NotificationSystem) {
+            window.NotificationSystem.show(result.message || 'No sales to report', { 
+              type: 'warning',
+              title: 'No Report Generated'
+            });
+          } else {
+            showNotification(result.message || 'No sales to report', 'warning');
+          }
+        }
+      } catch (error) {
+        console.error('Error generating report:', error);
+        
+        // Show error notification with sound
+        if (window.NotificationSystem) {
+          window.NotificationSystem.show('Error generating report: ' + (error.message || 'Unknown error'), { 
+            type: 'error',
+            title: 'Report Generation Failed'
+          });
+      } else {
+          showNotification('Error generating report', 'error');
+        }
+      } finally {
+        // Reset button state
+        const button = document.getElementById('generate-report-now');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-file-pdf me-2"></i> Generate Today\'s Report Now';
+      }
+    });
+    
+    // Function to show notifications
+    function showNotification(message, type = 'success') {
+      // Use the new notification system if available
+      if (window.NotificationSystem) {
+        return window.NotificationSystem.show(message, { type });
+      }
+      
+      // Legacy fallback code
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+      }
+      
+      document.getElementById('toast-container').appendChild(toast);
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      // Remove toast after it's hidden
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    }
+    
+    // Dashboard initialization script
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('Dashboard DOMContentLoaded event fired');
+      
+      // Get elements
+      const splashScreen = document.getElementById('splash-screen');
+      const appContainer = document.getElementById('app-container');
+      
+      // Make sure splash screen is visible and app container is hidden
+      if (splashScreen) {
+        splashScreen.style.display = 'flex';
+        console.log('Splash screen made visible');
+      }
+      
+      if (appContainer) {
+        appContainer.style.opacity = '0';
+        console.log('App container hidden');
+      }
+      
+      // Create default session (no login required)
+      const userSession = {
+        username: 'eliva-hardware',
+        role: 'user',
+        name: 'Hardware Manager',
+        loginTime: new Date().toISOString(),
+        lastActivity: new Date().toISOString()
+      };
+      
+      console.log('Using default session:', userSession);
+      
+      // Create session object for dashboard
+      const dashboardSession = {
+        username: userSession.username,
+        loggedIn: true,
+        loginTime: userSession.loginTime || new Date().toISOString(),
+        sessionId: 'session-' + Date.now(),
+        expiresAt: userSession.lastActivity ? new Date(new Date(userSession.lastActivity).getTime() + 24 * 60 * 60 * 1000).toISOString() : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      };
+      
+      // Save the session to localStorage
+      try {
+        localStorage.setItem('eliva_session', JSON.stringify(dashboardSession));
+        console.log('Dashboard session saved to localStorage');
+      } catch (e) {
+        console.error('Error saving session to localStorage:', e);
+      }
+      
+      // Load session timeout setting
+      try {
+        const savedTimeout = localStorage.getItem('sessionTimeoutHours');
+        if (savedTimeout) {
+          const timeoutInput = document.getElementById('session-timeout');
+          if (timeoutInput) {
+            timeoutInput.value = savedTimeout;
+          }
+        }
+      } catch (e) {
+        console.error('Error loading session timeout setting:', e);
+      }
+      
+      // Update username display
+      const usernameElements = document.querySelectorAll('.username-display');
+      usernameElements.forEach(element => {
+        element.textContent = dashboardSession.username;
+      });
+      
+      // Show splash screen and start progress
+      if (splashScreen) {
+        const progressBar = document.getElementById('splash-progress');
+        if (progressBar) {
+          let progress = 0;
+          
+          const progressInterval = setInterval(() => {
+            progress += 2;
+            progressBar.style.width = `${progress}%`;
+            
+            if (progress >= 100) {
+              clearInterval(progressInterval);
+              console.log('Progress complete, proceeding to dashboard');
+              
+              // Proceed with dashboard loading
+              loadDashboardAndTransition(dashboardSession);
+            }
+          }, 30);
+        } else {
+          // No progress bar, proceed directly
+          loadDashboardAndTransition(dashboardSession);
+        }
+      } else {
+        // No splash screen, proceed directly
+        loadDashboardAndTransition(dashboardSession);
+      }
+      
+      function loadDashboardAndTransition(session) {
+        console.log('Loading dashboard data with session:', session);
+        
+        // Session is always valid (no login required)
+        if (!session) {
+          console.error('No session provided to loadDashboardAndTransition');
+          return;
+        }
+        
+        // Update username display
+        if (session.username) {
+          try {
+            const usernameElements = document.querySelectorAll('.username-display');
+            usernameElements.forEach(element => {
+              element.textContent = session.username;
+            });
+          } catch (e) {
+            console.warn('Could not update username display:', e);
+          }
+        }
+        
+        // Transition from splash screen to dashboard
+        const splashScreen = document.getElementById('splash-screen');
+        const appContainer = document.getElementById('app-container');
+        
+        console.log('Transitioning from splash screen to dashboard');
+        
+        // First ensure we show the splash screen
+        if (splashScreen) {
+          splashScreen.style.display = 'flex';
+          splashScreen.classList.remove('splash-hidden');
+        }
+        
+        if (appContainer) {
+          appContainer.style.opacity = '0';
+          appContainer.classList.remove('app-visible');
+        }
+        
+        // Try to load the dashboard data
+        try {
+          // Force this to execute in next event loop to ensure splash is visible
+          setTimeout(() => {
+            // Try to use the initializeDashboard function first
+            if (typeof window.initializeDashboard === 'function') {
+              console.log('Using window.initializeDashboard function');
+              window.initializeDashboard(session);
+            } 
+            // Then try to use loadDashboardData as fallback
+            else if (typeof window.loadDashboardData === 'function') {
+              console.log('Using window.loadDashboardData function');
+              window.loadDashboardData();
+            }
+            // If neither function is available, use a simple dashboard load
+            else {
+              console.log('No dashboard loading functions available, using simple fallback');
+              // Update current date
+              const currentDate = document.getElementById('current-date');
+              if (currentDate) {
+                currentDate.textContent = new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                });
+              }
+            }
+            
+            // After a delay, transition from splash screen to dashboard
+            // This happens regardless of which method was used to load the data
+            setTimeout(function() {
+              console.log('Transitioning from splash screen to dashboard');
+              
+              if (splashScreen) {
+                splashScreen.classList.add('splash-hidden');
+                console.log('Added splash-hidden class to splash screen');
+              }
+              
+              if (appContainer) {
+                appContainer.classList.add('app-visible');
+                console.log('Added app-visible class to app container');
+              }
+              
+              // Remove splash screen from DOM after transition
+              setTimeout(function() {
+                if (splashScreen) {
+                  splashScreen.remove();
+                  console.log('Removed splash screen from DOM');
+                }
+              }, 600);
+            }, 1000);
+          }, 10);
+        } catch (error) {
+          console.error('Error in dashboard loading process:', error);
+          
+          // Even if there's an error, still try to show the dashboard
+          setTimeout(function() {
+            if (splashScreen) {
+              splashScreen.classList.add('splash-hidden');
+            }
+            
+            if (appContainer) {
+              appContainer.classList.add('app-visible');
+            }
+            
+            // Remove splash screen from DOM after transition
+            setTimeout(function() {
+              if (splashScreen) {
+                splashScreen.remove();
+              }
+            }, 600);
+          }, 1000);
+        }
+      }
+      
+      // Login redirect function removed - no login required
+      function redirectToLogin(reason) {
+        console.log(`Login redirect called but ignored: ${reason || 'authentication failed'}`);
+        // Do nothing - no login required
+      }
+    });
+  </script>
+  
+  <!-- Import the dashboard scripts -->
+  <script src="js/loadDashboard.js"></script>
+  <script src="js/dashboard.js"></script>
+  
+  <!-- Password Change Functionality -->
+  <script>
+    // Password change functionality using SessionManager
+    document.getElementById('password-change-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const changeBtn = document.getElementById('change-password-btn');
+      const successAlert = document.getElementById('password-success');
+      const errorAlert = document.getElementById('password-error');
+      const errorText = document.getElementById('password-error-text');
+      
+      // Hide previous messages
+      successAlert.style.display = 'none';
+      errorAlert.style.display = 'none';
+      
+      // Validate passwords match
+      if (newPassword !== confirmPassword) {
+        errorText.textContent = 'New passwords do not match';
+        errorAlert.style.display = 'block';
+        return;
+      }
+      
+      // Show loading state
+      changeBtn.disabled = true;
+      changeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Changing Password...';
+      
+      try {
+        // Use SessionManager to change password
+        const result = window.SessionManager.changePassword(currentPassword, newPassword);
+        
+        if (result.success) {
+          // Show success message
+          successAlert.style.display = 'block';
+          
+          // Clear form
+          document.getElementById('password-change-form').reset();
+          
+          // Auto-hide success message after 3 seconds
+          setTimeout(() => {
+            successAlert.style.display = 'none';
+          }, 3000);
+          
+          console.log('Password changed successfully');
+        } else {
+          throw new Error(result.message);
+        }
+        
+      } catch (error) {
+        console.error('Error changing password:', error);
+        errorText.textContent = error.message || 'Failed to change password';
+        errorAlert.style.display = 'block';
+      } finally {
+        // Reset button state
+        changeBtn.disabled = false;
+        changeBtn.innerHTML = '<i class="fas fa-save me-2"></i>Change Password';
+      }
+    });
+
+    // Show/hide password tab based on user role
+    document.getElementById('settingsModal').addEventListener('show.bs.modal', function() {
+      // Load current settings values
+      loadCurrentSettings();
+      
+      // Get current user session and update password tab visibility
+      try {
+        // Use SessionManager if available
+        if (window.SessionManager) {
+          const userSession = window.SessionManager.getCurrentSession();
+          updatePasswordTabVisibility(userSession);
+        } else {
+          // Fallback to direct localStorage access
+          const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+          updatePasswordTabVisibility(userSession);
+        }
+      } catch (error) {
+        console.error('Error getting user session for settings:', error);
+        // Show notification about the error
+        if (window.showNotification) {
+          window.showNotification('Error loading user session', 'error');
+        }
+        // Hide password tab by default on error
+        updatePasswordTabVisibility(null);
+      }
+    });
+
+    function loadCurrentSettings() {
+      // Load session timeout setting
+      try {
+        const timeoutInput = document.getElementById('session-timeout');
+        if (timeoutInput) {
+          // Use SessionManager if available
+          if (window.SessionManager) {
+            const timeout = window.SessionManager.getSessionTimeout();
+            timeoutInput.value = timeout;
+            console.log('Loaded session timeout from SessionManager:', timeout, 'hours');
+          } else {
+            // Fallback to localStorage
+            const savedTimeout = localStorage.getItem('sessionTimeoutHours') || '3';
+            timeoutInput.value = savedTimeout;
+            console.log('Loaded session timeout from localStorage:', savedTimeout, 'hours');
+          }
+        }
+      } catch (e) {
+        console.error('Error loading session timeout setting:', e);
+        // Set default value on error
+        const timeoutInput = document.getElementById('session-timeout');
+        if (timeoutInput) timeoutInput.value = '3';
+      }
+
+      // Load other settings
+      try {
+        const savedSettings = JSON.parse(localStorage.getItem('pipe_inventory_settings') || '{}');
+        
+        // Company name
+        const companyInput = document.getElementById('company-name');
+        if (companyInput) {
+          companyInput.value = savedSettings.companyName || '';
+        }
+        
+        // Alert threshold
+        const alertInput = document.getElementById('alert-threshold');
+        if (alertInput) {
+          alertInput.value = savedSettings.alertThreshold || '10';
+        }
+        
+        // Currency
+        const currencyInput = document.getElementById('currency');
+        if (currencyInput) {
+          currencyInput.value = savedSettings.currency || 'USD';
+        }
+        
+        console.log('Loaded general settings successfully');
+      } catch (e) {
+        console.error('Error loading general settings:', e);
+        // Set default values on error
+        const companyInput = document.getElementById('company-name');
+        const alertInput = document.getElementById('alert-threshold');
+        const currencyInput = document.getElementById('currency');
+        
+        if (companyInput) companyInput.value = '';
+        if (alertInput) alertInput.value = '10';
+        if (currencyInput) currencyInput.value = 'USD';
+      }
+    }
+
+    function updatePasswordTabVisibility(userSession) {
+      try {
+        const passwordTabItem = document.getElementById('password-tab-item');
+        console.log('Updating password tab visibility for user:', userSession);
+        
+        if (passwordTabItem) {
+          if (userSession && userSession.role === 'user') {
+            passwordTabItem.style.display = 'block';
+            console.log('Password tab shown for user role');
+          } else {
+            passwordTabItem.style.display = 'none';
+            console.log('Password tab hidden for admin role or no session');
+          }
+        } else {
+          console.warn('Password tab item not found - this is normal if not logged in');
+        }
+      } catch (error) {
+        console.error('Error updating password tab visibility:', error);
+      }
+    }
+
+    // Safe notification function
+    function showSafeNotification(message, type = 'info') {
+      try {
+        if (window.NotificationSystem && typeof window.NotificationSystem.show === 'function') {
+          window.NotificationSystem.show(message, { type: type });
+        } else if (window.showNotification && typeof window.showNotification === 'function') {
+          window.showNotification(message, type);
+        } else {
+          console.log(`Notification (${type}):`, message);
+        }
+      } catch (error) {
+        console.error('Error showing notification:', error);
+        console.log(`Notification (${type}):`, message);
+      }
+    }
+  </script>
+</body>
+</html>

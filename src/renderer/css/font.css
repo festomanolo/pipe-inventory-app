@@ -1,0 +1,171 @@
+/* 
+ * Font Implementation for Pipe Inventory App
+ * Implements Poppins as the primary font with Open Sans as a complementary font
+ */
+
+/* Import Poppins with various weights */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* Import Open Sans as a complementary font */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+/* Root variables for font families */
+:root {
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: 'Open Sans', sans-serif;
+  --font-receipt: 'Courier New', monospace; /* Keep receipts with a monospace font */
+}
+
+/* Apply Poppins to all elements by default */
+* {
+  font-family: var(--font-primary);
+}
+
+/* Typography scale */
+h1, .h1 {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: -0.5px;
+}
+
+h2, .h2 {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: -0.3px;
+}
+
+h3, .h3 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 1.75rem;
+  letter-spacing: -0.2px;
+}
+
+h4, .h4 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+h5, .h5 {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+h6, .h6 {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Body text */
+p, .p {
+  font-family: var(--font-secondary);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Small text */
+small, .small {
+  font-family: var(--font-secondary);
+  font-size: 0.875rem;
+}
+
+/* Button text */
+.btn {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Form elements */
+input, select, textarea, .form-control, .form-select {
+  font-family: var(--font-secondary);
+}
+
+/* Sidebar navigation */
+.sidebar-nav li a {
+  font-family: var(--font-primary);
+  font-weight: 500;
+}
+
+/* Card titles */
+.card-title {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+/* Table headers */
+table thead th {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+/* Table body */
+table tbody td {
+  font-family: var(--font-secondary);
+}
+
+/* Stat cards */
+.stat-highlight {
+  font-family: var(--font-primary);
+  font-weight: 700;
+}
+
+.stat-label {
+  font-family: var(--font-secondary);
+  font-weight: 400;
+}
+
+/* Receipt specific styling - keep monospace */
+.receipt-preview *,
+.receipt-content *,
+#printable-receipt *,
+.print-receipt * {
+  font-family: var(--font-receipt) !important;
+}
+
+/* Analytics charts */
+.chart-title,
+.chart-label {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+/* Badges */
+.badge {
+  font-family: var(--font-primary);
+  font-weight: 500;
+}
+
+/* Toasts and notifications */
+.toast-title {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+.toast-body {
+  font-family: var(--font-secondary);
+}
+
+/* Modal elements */
+.modal-title {
+  font-family: var(--font-primary);
+  font-weight: 600;
+}
+
+/* Splash screen */
+.splash-title {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.splash-subtitle {
+  font-family: var(--font-secondary);
+  font-weight: 400;
+} 

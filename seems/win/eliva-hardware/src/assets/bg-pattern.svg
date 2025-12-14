@@ -1,0 +1,61 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="pipe-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1929" stop-opacity="0.1"/>
+      <stop offset="50%" stop-color="#122237" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1a3a5f" stop-opacity="0.1"/>
+    </linearGradient>
+    
+    <!-- Patterns -->
+    <pattern id="pipe-pattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+      <!-- Horizontal pipes -->
+      <path d="M0,40 L200,40" stroke="url(#pipe-gradient)" stroke-width="8" fill="none" opacity="0.3"/>
+      <path d="M0,100 L200,100" stroke="url(#pipe-gradient)" stroke-width="6" fill="none" opacity="0.2"/>
+      <path d="M0,160 L200,160" stroke="url(#pipe-gradient)" stroke-width="10" fill="none" opacity="0.25"/>
+      
+      <!-- Vertical pipes -->
+      <path d="M40,0 L40,200" stroke="url(#pipe-gradient)" stroke-width="6" fill="none" opacity="0.2"/>
+      <path d="M100,0 L100,200" stroke="url(#pipe-gradient)" stroke-width="8" fill="none" opacity="0.3"/>
+      <path d="M160,0 L160,200" stroke="url(#pipe-gradient)" stroke-width="5" fill="none" opacity="0.15"/>
+      
+      <!-- Connectors -->
+      <circle cx="40" cy="40" r="6" fill="url(#pipe-gradient)" opacity="0.4"/>
+      <circle cx="100" cy="40" r="6" fill="url(#pipe-gradient)" opacity="0.4"/>
+      <circle cx="160" cy="40" r="6" fill="url(#pipe-gradient)" opacity="0.4"/>
+      
+      <circle cx="40" cy="100" r="5" fill="url(#pipe-gradient)" opacity="0.3"/>
+      <circle cx="100" cy="100" r="7" fill="url(#pipe-gradient)" opacity="0.5"/>
+      <circle cx="160" cy="100" r="5" fill="url(#pipe-gradient)" opacity="0.3"/>
+      
+      <circle cx="40" cy="160" r="7" fill="url(#pipe-gradient)" opacity="0.4"/>
+      <circle cx="100" cy="160" r="6" fill="url(#pipe-gradient)" opacity="0.4"/>
+      <circle cx="160" cy="160" r="8" fill="url(#pipe-gradient)" opacity="0.5"/>
+      
+      <!-- Diagonal pipes -->
+      <path d="M20,20 L70,70" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.15"/>
+      <path d="M130,130 L180,180" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.15"/>
+      <path d="M130,70 L180,20" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.15"/>
+      <path d="M20,180 L70,130" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.15"/>
+      
+      <!-- Pipe symbols -->
+      <path d="M120,70 A10,10 0 1,1 140,70 A10,10 0 1,1 120,70" stroke="url(#pipe-gradient)" stroke-width="3" fill="none" opacity="0.2"/>
+      <path d="M60,130 A10,10 0 1,1 80,130 A10,10 0 1,1 60,130" stroke="url(#pipe-gradient)" stroke-width="3" fill="none" opacity="0.2"/>
+      
+      <!-- T-junctions -->
+      <path d="M40,40 L40,60 L60,60" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.2"/>
+      <path d="M160,160 L160,140 L140,140" stroke="url(#pipe-gradient)" stroke-width="4" fill="none" opacity="0.2"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0a1929"/>
+  
+  <!-- Pattern overlay -->
+  <rect width="100%" height="100%" fill="url(#pipe-pattern)"/>
+  
+  <!-- Subtle glow effects -->
+  <circle cx="10%" cy="30%" r="200" fill="#4a6cff" opacity="0.03"/>
+  <circle cx="80%" cy="70%" r="300" fill="#00cfe8" opacity="0.02"/>
+  <circle cx="50%" cy="20%" r="250" fill="#28c76f" opacity="0.01"/>
+</svg> 

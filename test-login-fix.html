@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Session Storage Test</h2>
+        <div id="sessionStatus"></div>
+        <button onclick="testSessionStorage()">Test Session Storage</button>
+        <button onclick="clearAllSessions()">Clear All Sessions</button>
+        <button onclick="createTestSession()">Create Test Session</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Authentication Test</h2>
+        <div id="authStatus"></div>
+        <button onclick="testAuthentication()">Test Authentication</button>
+        <button onclick="simulateLogin()">Simulate Login</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Session Data</h2>
+        <pre id="sessionData"></pre>
+        <button onclick="displaySessionData()">Display Session Data</button>
+    </div>
+
+    <script>
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testSessionStorage() {
+            try {
+                // Test localStorage functionality
+                const testKey = 'test-session-' + Date.now();
+                const testData = { test: true, timestamp: new Date().toISOString() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testData));
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved && JSON.parse(retrieved).test === true) {
+                    updateStatus('sessionStatus', 'Session storage is working correctly', 'success');
+                } else {
+                    updateStatus('sessionStatus', 'Session storage test failed', 'error');
+                }
+            } catch (error) {
+                updateStatus('sessionStatus', `Session storage error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAllSessions() {
+            try {
+                localStorage.removeItem('userSession');
+                localStorage.removeItem('eliva_session');
+                localStorage.removeItem('eliva-hardware-password');
+                localStorage.removeItem('sessionTimeout');
+                updateStatus('sessionStatus', 'All sessions cleared', 'success');
+                displaySessionData();
+            } catch (error) {
+                updateStatus('sessionStatus', `Error clearing sessions: ${error.message}`, 'error');
+            }
+        }
+
+        function createTestSession() {
+            try {
+                const sessionData = {
+                    username: 'eliva-hardware',
+                    role: 'user',
+                    name: 'Hardware Manager',
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                
+                localStorage.setItem('userSession', JSON.stringify(sessionData));
+                localStorage.setItem('eliva_session', JSON.stringify({
+                    username: 'eliva-hardware',
+                    loggedIn: true,
+                    loginTime: new Date().toISOString(),
+                    sessionId: 'test-session-' + Date.now()
+                }));
+                
+                updateStatus('sessionStatus', 'Test session created successfully', 'success');
+                displaySessionData();
+            } catch (error) {
+                updateStatus('sessionStatus', `Error creating test session: ${error.message}`, 'error');
+            }
+        }
+
+        function testAuthentication() {
+            try {
+                const userSession = localStorage.getItem('userSession');
+                const backupSession = localStorage.getItem('eliva_session');
+                
+                if (userSession) {
+                    const session = JSON.parse(userSession);
+                    if (session.username) {
+                        updateStatus('authStatus', `Authentication would succeed for user: ${session.username}`, 'success');
+                    } else {
+                        updateStatus('authStatus', 'Invalid session data - missing username', 'error');
+                    }
+                } else if (backupSession) {
+                    const backup = JSON.parse(backupSession);
+                    if (backup.username && backup.loggedIn) {
+                        updateStatus('authStatus', `Authentication would succeed using backup session for user: ${backup.username}`, 'success');
+                    } else {
+                        updateStatus('authStatus', 'Invalid backup session data', 'error');
+                    }
+                } else {
+                    updateStatus('authStatus', 'No valid session found - would redirect to login', 'error');
+                }
+            } catch (error) {
+                updateStatus('authStatus', `Authentication test error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateLogin() {
+            try {
+                // Simulate the login process
+                const currentUser = 'eliva-hardware';
+                const sessionData = {
+                    username: currentUser,
+                    role: 'user',
+                    name: 'Hardware Manager',
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                
+                // Store session data like the login page does
+                localStorage.setItem('userSession', JSON.stringify(sessionData));
+                localStorage.setItem('eliva_session', JSON.stringify({
+                    username: currentUser,
+                    loggedIn: true,
+                    loginTime: new Date().toISOString(),
+                    sessionId: 'simulated-session-' + Date.now(),
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                }));
+                
+                updateStatus('authStatus', 'Login simulation completed - session created', 'success');
+                displaySessionData();
+                
+                // Test authentication after simulated login
+                setTimeout(() => {
+                    testAuthentication();
+                }, 100);
+                
+            } catch (error) {
+                updateStatus('authStatus', `Login simulation error: ${error.message}`, 'error');
+            }
+        }
+
+        function displaySessionData() {
+            try {
+                const data = {
+                    userSession: localStorage.getItem('userSession'),
+                    eliva_session: localStorage.getItem('eliva_session'),
+                    sessionTimeout: localStorage.getItem('sessionTimeout'),
+                    password: localStorage.getItem('eliva-hardware-password') ? '[STORED]' : null
+                };
+                
+                // Parse JSON strings for better display
+                Object.keys(data).forEach(key => {
+                    if (data[key] && data[key] !== '[STORED]') {
+                        try {
+                            data[key] = JSON.parse(data[key]);
+                        } catch (e) {
+                            // Keep as string if not JSON
+                        }
+                    }
+                });
+                
+                document.getElementById('sessionData').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('sessionData').textContent = `Error displaying session data: ${error.message}`;
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            displaySessionData();
+            testSessionStorage();
+        });
+    </script>
+</body>
+</html>

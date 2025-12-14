@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+        }
+        .login-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.3);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success {
+            background: rgba(76, 201, 240, 0.2);
+            border: 1px solid #4cc9f0;
+        }
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-form">
+        <h1>🔐 Simple Login Test</h1>
+        <p>Test the login functionality with these credentials:</p>
+        <ul>
+            <li><strong>Username:</strong> eliva-hardware</li>
+            <li><strong>Password:</strong> eliva2011</li>
+        </ul>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" value="eliva-hardware" required>
+            <input type="password" id="password" placeholder="Password" value="eliva2011" required>
+            <button type="submit">Login</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <div style="margin-top: 30px;">
+            <h3>Test Actions:</h3>
+            <button onclick="testSession()">Test Session Storage</button>
+            <button onclick="clearSession()">Clear Session</button>
+            <button onclick="goToLogin()">Go to Login Page</button>
+            <button onclick="goToDashboard()">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const result = document.getElementById('result');
+            
+            // Simple validation
+            if (username === 'eliva-hardware' && password === 'eliva2011') {
+                // Create session
+                const session = {
+                    username: username,
+                    role: 'user',
+                    name: 'Hardware Manager',
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                
+                // Store in multiple places for redundancy
+                localStorage.setItem('userSession', JSON.stringify(session));
+                localStorage.setItem('eliva_session', JSON.stringify({
+                    username: username,
+                    loggedIn: true,
+                    loginTime: new Date().toISOString(),
+                    sessionId: 'session-' + Date.now(),
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                }));
+                
+                result.innerHTML = '<div class="success">✅ Login successful! Session created. You can now go to the dashboard.</div>';
+                console.log('Login successful, session created:', session);
+            } else {
+                result.innerHTML = '<div class="error">❌ Login failed! Invalid credentials.</div>';
+            }
+        });
+
+        function testSession() {
+            const result = document.getElementById('result');
+            const userSession = localStorage.getItem('userSession');
+            const elivaSession = localStorage.getItem('eliva_session');
+            
+            let html = '<div class="info">📋 Session Status:</div>';
+            html += '<div><strong>userSession:</strong> ' + (userSession ? '✅ Found' : '❌ Not found') + '</div>';
+            html += '<div><strong>eliva_session:</strong> ' + (elivaSession ? '✅ Found' : '❌ Not found') + '</div>';
+            
+            if (userSession) {
+                const session = JSON.parse(userSession);
+                html += '<div><strong>Username:</strong> ' + session.username + '</div>';
+                html += '<div><strong>Role:</strong> ' + session.role + '</div>';
+            }
+            
+            result.innerHTML = html;
+        }
+
+        function clearSession() {
+            localStorage.removeItem('userSession');
+            localStorage.removeItem('eliva_session');
+            document.getElementById('result').innerHTML = '<div class="info">🗑️ All sessions cleared</div>';
+        }
+
+        function goToLogin() {
+            window.location.href = 'src/renderer/login.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = 'src/renderer/dashboard.html';
+        }
+
+        // Auto-test session on load
+        window.addEventListener('load', function() {
+            setTimeout(testSession, 1000);
+        });
+    </script>
+</body>
+</html> 

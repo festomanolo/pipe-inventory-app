@@ -1,0 +1,44 @@
+[
+  {
+    "id": "sale-1747567557923-001",
+    "customerId": "cust-1747567557886-001",
+    "totalAmount": 500000,
+    "createdAt": "2025-05-11T11:25:57.923Z",
+    "items": [
+      {
+        "product_id": "product-001",
+        "product_name": "PVC Pipe 4\"",
+        "quantity": 50,
+        "unit_price": 10000
+      }
+    ]
+  },
+  {
+    "id": "sale-1747567557923-002",
+    "customerId": "cust-1747567557888-002",
+    "totalAmount": 300000,
+    "createdAt": "2025-05-17T11:25:57.923Z",
+    "items": [
+      {
+        "product_id": "product-002",
+        "product_name": "PVC Pipe 2\"",
+        "quantity": 60,
+        "unit_price": 5000
+      }
+    ]
+  },
+  {
+    "id": "sale-1747567557923-003",
+    "customerId": "cust-1747567557888-003",
+    "totalAmount": 850000,
+    "createdAt": "2025-05-18T11:25:57.923Z",
+    "items": [
+      {
+        "product_id": "product-003",
+        "product_name": "Metal Pipe 6\"",
+        "quantity": 25,
+        "unit_price": 34000
+      }
+    ]
+  }
+]

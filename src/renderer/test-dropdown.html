@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Product Type Dropdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .custom-type {
+      margin-top: 10px;
+      display: none;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Product Type Dropdown</h1>
+  
+  <div class="form-group">
+    <label for="category">Product Category</label>
+    <select id="category">
+      <option value="">Select Category</option>
+      <option value="Pipes">Pipes & Plumbing</option>
+      <option value="Paint">Paint & Accessories</option>
+      <option value="Building">Building Materials</option>
+      <option value="Electrical">Electrical Supplies</option>
+      <option value="Hardware">Hardware & Fasteners</option>
+      <option value="Tools">Tools & Equipment</option>
+      <option value="Roofing">Roofing Materials</option>
+      <option value="Flooring">Flooring Materials</option>
+      <option value="Lighting">Lighting Fixtures</option>
+      <option value="Bath">Bath & Kitchen</option>
+      <option value="Custom">Custom Product</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="type">Product Type</label>
+    <select id="type">
+      <option value="">Select Product Type</option>
+    </select>
+    <div id="custom-type-container" class="custom-type">
+      <input type="text" id="custom-type" placeholder="Enter custom product type">
+    </div>
+  </div>
+  
+  <div class="result">
+    <h3>Results:</h3>
+    <div id="result-output"></div>
+  </div>
+  
+  <script>
+    // Define product types
+    const productTypes = {
+      'Pipes': ['PVC Pipe', 'HDPE Pipe', 'Steel Pipe', 'Copper Pipe', 'PPR Pipe', 'UPVC Pipe', 'GI Pipe', 'Pipe Fittings', 'Pipe Valves'],
+      'Paint': ['Emulsion Paint', 'Enamel Paint', 'Primer', 'Varnish', 'Wood Stain', 'Spray Paint', 'Textured Paint', 'Ceiling Paint'],
+      'Building': ['Cement', 'Sand', 'Gravel', 'Bricks', 'Blocks', 'Concrete', 'Reinforcement', 'Wood', 'Plywood', 'Gypsum'],
+      'Electrical': ['Cables', 'Switches', 'Sockets', 'Circuit Breakers', 'Distribution Boards', 'Conduits', 'Electrical Boxes'],
+      'Hardware': ['Nails', 'Screws', 'Bolts', 'Nuts', 'Washers', 'Hinges', 'Locks', 'Handles', 'Brackets', 'Chains'],
+      'Tools': ['Hand Tools', 'Power Tools', 'Measuring Tools', 'Cutting Tools', 'Drilling Tools', 'Safety Equipment'],
+      'Roofing': ['Metal Sheets', 'Roof Tiles', 'Roof Panels', 'Waterproofing', 'Gutters', 'Roof Fasteners'],
+      'Flooring': ['Tiles', 'Wooden Flooring', 'Laminate Flooring', 'Vinyl Flooring', 'Carpet', 'Floor Adhesives'],
+      'Lighting': ['Bulbs', 'LED Lights', 'Tubes', 'Lamps', 'Fixtures', 'Emergency Lights', 'Decorative Lights'],
+      'Bath': ['Taps', 'Showers', 'Basins', 'Toilets', 'Bathtubs', 'Bathroom Accessories', 'Kitchen Sinks', 'Faucets']
+    };
+    
+    // Expose to global scope
+    window.productTypes = productTypes;
+    
+    // DOM elements
+    const categorySelect = document.getElementById('category');
+    const typeSelect = document.getElementById('type');
+    const customTypeContainer = document.getElementById('custom-type-container');
+    const customTypeInput = document.getElementById('custom-type');
+    const resultOutput = document.getElementById('result-output');
+    
+    // Function to update type options based on selected category
+    function updateTypeOptions() {
+      // Clear previous options
+      typeSelect.innerHTML = '<option value="">Select Product Type</option>';
+      
+      const category = categorySelect.value;
+      log(`Category changed to: ${category}`);
+      
+      // Handle custom category
+      if (category === 'Custom') {
+        customTypeContainer.style.display = 'block';
+        
+        // Add custom option to type select
+        const option = document.createElement('option');
+        option.value = 'custom';
+        option.textContent = 'Custom Type';
+        typeSelect.appendChild(option);
+        typeSelect.value = 'custom';
+      } else {
+        // Hide custom type input
+        customTypeContainer.style.display = 'none';
+        
+        // Add options based on selected category
+        if (category && productTypes[category]) {
+          productTypes[category].forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            typeSelect.appendChild(option);
+          });
+          
+          log(`Added ${productTypes[category].length} options to type dropdown`);
+        } else {
+          log('No product types found for category: ' + category);
+        }
+      }
+    }
+    
+    // Function to log results
+    function log(message) {
+      const logEntry = document.createElement('p');
+      logEntry.textContent = message;
+      resultOutput.appendChild(logEntry);
+      console.log(message);
+    }
+    
+    // Set up event listeners
+    categorySelect.addEventListener('change', updateTypeOptions);
+    typeSelect.addEventListener('change', () => {
+      log(`Selected type: ${typeSelect.value}`);
+    });
+    
+    // Initialize
+    log('Test page loaded');
+  </script>
+</body>
+</html> 
